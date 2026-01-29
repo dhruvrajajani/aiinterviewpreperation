@@ -9,6 +9,10 @@ router.get('/', async (req, res) => {
     try {
         if (req.isMockMode) {
             const mockData = require('../mockData');
+            const { category } = req.query;
+            if (category) {
+                return res.json(mockData.questions.filter(q => q.category === category));
+            }
             return res.json(mockData.questions);
         }
 

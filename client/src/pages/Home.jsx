@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Code, Brain, Trophy, ChevronRight, Users, CheckCircle, Zap } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
+    const { user } = useAuth();
+
     return (
         <div className="min-h-screen bg-background text-white overflow-hidden relative">
             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
@@ -25,12 +28,20 @@ const Home = () => {
                         The ultimate AI-powered platform for coding, aptitude, and behavioral interview preparation using the MERN stack.
                     </p>
                     <div className="flex gap-4 justify-center">
-                        <Link to="/register" className="bg-primary hover:bg-indigo-500 text-white px-8 py-4 rounded-full font-semibold transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg shadow-primary/25">
-                            Get Started <ChevronRight size={20} />
-                        </Link>
-                        <Link to="/login" className="bg-surface border border-white/10 hover:bg-surface/80 text-white px-8 py-4 rounded-full font-semibold transition-all">
-                            Login
-                        </Link>
+                        {user ? (
+                            <Link to="/dashboard" className="bg-primary hover:bg-indigo-500 text-white px-8 py-4 rounded-full font-semibold transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg shadow-primary/25">
+                                Go to Dashboard <ChevronRight size={20} />
+                            </Link>
+                        ) : (
+                            <>
+                                <Link to="/register" className="bg-primary hover:bg-indigo-500 text-white px-8 py-4 rounded-full font-semibold transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg shadow-primary/25">
+                                    Get Started <ChevronRight size={20} />
+                                </Link>
+                                <Link to="/login" className="bg-surface border border-white/10 hover:bg-surface/80 text-white px-8 py-4 rounded-full font-semibold transition-all">
+                                    Login
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </motion.div>
             </section>
@@ -138,9 +149,15 @@ const Home = () => {
             <section className="py-20 px-6 text-center bg-gradient-to-b from-transparent to-primary/20">
                 <h2 className="text-4xl font-bold mb-6">Ready to Start Your Journey?</h2>
                 <p className="text-xl text-muted mb-10">Join thousands of developers acing their interviews today.</p>
-                <Link to="/register" className="bg-white text-background hover:bg-gray-100 px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg">
-                    Join Now - It's Free
-                </Link>
+                {user ? (
+                    <Link to="/dashboard" className="bg-white text-background hover:bg-gray-100 px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg">
+                        Continue Learning
+                    </Link>
+                ) : (
+                    <Link to="/register" className="bg-white text-background hover:bg-gray-100 px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg">
+                        Join Now - It's Free
+                    </Link>
+                )}
             </section>
 
             {/* Footer */}

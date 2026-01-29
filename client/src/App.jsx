@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import CodingArena from './pages/CodingArena';
+import ResumeBuilder from './pages/ResumeBuilder';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
             <Route path="register" element={<Register />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="coding" element={<CodingArena />} />
+            <Route path="resume" element={<ResumeBuilder />} />
           </Route>
         </Routes>
       </Router>
