@@ -37,7 +37,11 @@ const QuestionSchema = new mongoose.Schema({
         text: String,
         isCorrect: Boolean
     }],
-    companies: [String] // e.g., "Google", "Amazon"
+    companies: [String], // e.g., "Google", "Amazon"
+    link: {
+        type: String,
+        default: ''
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Question', QuestionSchema);
