@@ -58,7 +58,7 @@ const CodingArena = () => {
                     />
                 </div>
                 
-                <div className="flex gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
                     <div className="flex items-center gap-2">
                         <Signal size={16} className="text-muted" />
                         <select 
