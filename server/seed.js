@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
 const Question = require('./models/Question');
+const User = require('./models/User');
 
 dotenv.config();
 
@@ -38,15 +40,40 @@ const questions = [
     }
 ];
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(async () => {
+const seedData = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
         console.log('MongoDB Connected for Seeding');
+
+        // Seed Questions
         await Question.deleteMany({});
         await Question.insertMany(questions);
-        console.log('Data Seeded Successfully');
+        console.log('Questions Seeded Successfully');
+
+        // Seed User
+        await User.deleteMany({}); // Optional: Clear users to avoid duplicates/conflicts for this seeded user
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('password', salt); // Default password
+
+        const user = new User({
+            username: 'TestUser',
+            email: 'test@example.com',
+            password: hashedPassword,
+            coins: 100,
+            streak: 5,
+            badges: ['Early Adopter'],
+            solvedQuestions: []
+        });
+
+        await user.save();
+        console.log('Test User Seeded Successfully');
+
         process.exit();
-    })
-    .catch(err => {
+    } catch (err) {
         console.error(err);
         process.exit(1);
-    });
+    }
+};
+
+seedData();
