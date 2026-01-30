@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import CodingArena from './pages/CodingArena';
 import ResumeBuilder from './pages/ResumeBuilder';
+import MockInterview from './pages/MockInterview';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="coding" element={<CodingArena />} />
             <Route path="resume" element={<ResumeBuilder />} />
+            <Route path="interview" element={<MockInterview />} />
           </Route>
         </Routes>
       </Router>

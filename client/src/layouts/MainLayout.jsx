@@ -1,6 +1,7 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Sparkles, LogOut, User as UserIcon } from 'lucide-react';
+import Footer from '../components/Footer';
 
 const MainLayout = () => {
   const { user, logout } = useAuth();
@@ -24,6 +25,7 @@ const MainLayout = () => {
             <Link to="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">Dashboard</Link>
             <Link to="/coding" className="text-sm font-medium hover:text-primary transition-colors">Coding</Link>
             <Link to="/resume" className="text-sm font-medium hover:text-primary transition-colors">Resume AI</Link>
+            <Link to="/interview" className="text-sm font-medium hover:text-primary transition-colors">AI Interview</Link>
             
             {user ? (
               <div className="flex items-center gap-4 pl-6 border-l border-white/10">
@@ -49,9 +51,10 @@ const MainLayout = () => {
         </div>
       </nav>
 
-      <main className="pt-20">
+      <main className="pt-20 min-h-[calc(100vh-80px)]">
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
 };
