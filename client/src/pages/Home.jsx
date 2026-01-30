@@ -20,7 +20,7 @@ const Home = () => {
                     <div className="inline-block mb-4 px-4 py-1 rounded-full bg-surface border border-primary/30 text-primary text-sm font-semibold tracking-wide uppercase">
                         🚀 Launch Your Career
                     </div>
-                    <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-6 leading-tight">
+                    <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold tracking-tight mb-6 leading-tight">
                         Master Your <br />
                         <span className="gradient-text">Dream Interview</span>
                     </h1>
@@ -62,7 +62,7 @@ const Home = () => {
                     <h2 className="text-3xl md:text-5xl font-bold mb-4">Everything you need to <span className="text-primary">succeed</span></h2>
                     <p className="text-muted text-lg">Comprehensive tools to tackle every stage of the interview process.</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                     <FeatureCard
                         icon={<Code className="text-primary" size={40} />}
                         title="Coding Arena"
@@ -175,7 +175,7 @@ const StatBox = ({ number, label }) => (
 const FeatureCard = ({ icon, title, desc }) => (
     <motion.div
         whileHover={{ y: -10 }}
-        className="glass-card p-8 hover:bg-surface/80 transition-colors"
+        className="glass-card p-8 hover:bg-surface/80 transition-colors w-full"
     >
         <div className="mb-6 p-4 bg-white/5 rounded-2xl w-fit">{icon}</div>
         <h3 className="text-2xl font-bold mb-3">{title}</h3>
