@@ -160,10 +160,7 @@ const Home = () => {
                 )}
             </section>
 
-            {/* Footer */}
-            <footer className="py-10 border-t border-white/10 text-center text-muted">
-                <p>&copy; {new Date().getFullYear()} InterviewPrep. All rights reserved.</p>
-            </footer>
+
         </div>
     );
 };

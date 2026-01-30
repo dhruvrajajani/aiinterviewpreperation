@@ -4,41 +4,10 @@ const Question = require('./models/Question');
 
 dotenv.config();
 
+const codingQuestions = require('./data/codingQuestions');
+
 const questions = [
-    {
-        title: "Two Sum",
-        description: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
-        category: "Coding",
-        difficulty: "Easy",
-        points: 10,
-        testCases: [
-            { input: "[2,7,11,15], 9", output: "[0,1]", explanation: "2 + 7 = 9" },
-            { input: "[3,2,4], 6", output: "[1,2]", explanation: "2 + 4 = 6" }
-        ],
-        starterCode: "function twoSum(nums, target) {\n  // Write your code here\n}"
-    },
-    {
-        title: "Reverse String",
-        description: "Write a function that reverses a string. The input string is given as an array of characters s.",
-        category: "Coding",
-        difficulty: "Easy",
-        points: 10,
-        testCases: [
-            { input: "['h','e','l','l','o']", output: "['o','l','l','e','h']", explanation: "Details..." }
-        ],
-        starterCode: "function reverseString(s) {\n  // Write your code here\n}"
-    },
-    {
-        title: "Valid Anagram",
-        description: "Given two strings s and t, return true if t is an anagram of s, and false otherwise.",
-        category: "Coding",
-        difficulty: "Medium",
-        points: 20,
-        testCases: [
-            { input: "anagram, nagaram", output: "true", explanation: "Both contain same characters" }
-        ],
-        starterCode: "function isAnagram(s, t) {\n  // Write your code here\n}"
-    },
+    ...codingQuestions,
     {
         title: "Logical Sequence",
         description: "Find the missing number in the series: 2, 6, 12, 20, 30, ?",
