@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -13,9 +14,11 @@ const Login = () => {
     e.preventDefault();
     try {
       await login(formData.email, formData.password);
+      toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.msg || 'Login failed');
+      toast.error(err.response?.data?.msg || 'Login failed');
     }
   };
 

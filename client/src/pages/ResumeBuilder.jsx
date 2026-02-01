@@ -3,6 +3,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, User, Briefcase, GraduationCap, Code, Sparkles, ChevronRight, ChevronLeft, Download, LayoutTemplate, Palette, CheckCircle, FolderGit2, BookOpen, Link as LinkIcon, Github } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const ResumeBuilder = () => {
     const [step, setStep] = useState(1);
@@ -13,6 +14,7 @@ const ResumeBuilder = () => {
     const downloadPDF = async () => {
         if (!resumeRef.current) return;
         
+        const toastId = toast.loading('Generating PDF...');
         try {
             const canvas = await html2canvas(resumeRef.current, { scale: 2 });
             const imgData = canvas.toDataURL('image/png');
@@ -22,8 +24,10 @@ const ResumeBuilder = () => {
             
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(`${formData.fullName.replace(/\s+/g, '_')}_Resume.pdf`);
+            toast.success('Resume downloaded!', { id: toastId });
         } catch (err) {
             console.error("PDF Generation failed", err);
+            toast.error('Failed to generate PDF', { id: toastId });
         }
     };
     
