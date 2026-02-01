@@ -7,13 +7,13 @@ export default {
     theme: {
         extend: {
             colors: {
-                primary: '#6366f1', // Indigo 500
-                secondary: '#ec4899', // Pink 500
-                accent: '#8b5cf6', // Violet 500
-                background: '#0f172a', // Slate 900
-                surface: '#1e293b', // Slate 800
-                text: '#f8fafc', // Slate 50
-                muted: '#94a3b8', // Slate 400
+                primary: '#3b82f6', // Blue 500
+                secondary: '#22c55e', // Green 500
+                accent: '#facc15', // Yellow 400
+                background: '#000000', // Pure Black
+                surface: '#121212', // Neutral Dark Gray
+                text: '#ffffff', // Pure White
+                muted: '#737373', // Neutral Gray 500
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
