@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const Register = () => {
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
@@ -13,9 +14,11 @@ const Register = () => {
     e.preventDefault();
     try {
       await register(formData.username, formData.email, formData.password);
+      toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.msg || 'Registration failed');
+      toast.error(err.response?.data?.msg || 'Registration failed');
     }
   };
 
