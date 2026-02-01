@@ -11,9 +11,9 @@
 }
 
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-secondary;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent;
 }
 
 .glass-card {
-  @apply bg-surface/50 backdrop-blur-lg border border-white/10 rounded-xl shadow-xl;
+  @apply bg-surface/80 backdrop-blur-lg border border-white/10 rounded-xl shadow-xl;
 }
