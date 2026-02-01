@@ -11,6 +11,8 @@ import CodingArena from './pages/CodingArena';
 import ResumeBuilder from './pages/ResumeBuilder';
 import MockInterview from './pages/MockInterview';
 
+import ProtectedRoute from './components/ProtectedRoute';
+
 function App() {
   return (
     <AuthProvider>
@@ -26,11 +28,33 @@ function App() {
             <Route index element={<Home />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="coding" element={<CodingArena />} />
-            <Route path="resume" element={<ResumeBuilder />} />
-            <Route path="interview" element={<MockInterview />} />
+            
+            {/* Protected Routes */}
+            <Route path="dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="coding" element={
+              <ProtectedRoute>
+                <CodingArena />
+              </ProtectedRoute>
+            } />
+            <Route path="resume" element={
+              <ProtectedRoute>
+                <ResumeBuilder />
+              </ProtectedRoute>
+            } />
+            <Route path="interview" element={
+              <ProtectedRoute>
+                <MockInterview />
+              </ProtectedRoute>
+            } />
           </Route>
         </Routes>
       </Router>
