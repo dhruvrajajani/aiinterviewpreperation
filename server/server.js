@@ -40,7 +40,12 @@ const questionRoutes = require('./routes/questions');
 // const aiRoutes = require('./routes/ai');
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', require('./routes/users'));
 app.use('/api/questions', questionRoutes);
+app.use('/api/upload', require('./routes/upload'));
+
+// Serve static assets
+app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 // app.use('/api/ai', aiRoutes);
 
 app.listen(PORT, () => {
