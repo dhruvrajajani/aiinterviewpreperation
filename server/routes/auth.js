@@ -8,22 +8,22 @@ const jwt = require('jsonwebtoken');
 router.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
-        
+
         if (req.isMockMode) {
             const mockData = require('../mockData');
             let user = mockData.users.find(u => u.email === email);
             if (user) return res.status(400).json({ msg: 'User already exists' });
-            
+
             user = {
                 id: Date.now().toString(),
-                username, 
-                email, 
+                username,
+                email,
                 password, // In mock mode, we store plain text or simple hash
                 coins: 0,
                 streak: 0
             };
             mockData.users.push(user);
-            
+
             const payload = { user: { id: user.id } };
             jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
                 if (err) throw err;
@@ -67,7 +67,7 @@ router.post('/login', async (req, res) => {
             const mockData = require('../mockData');
             let user = mockData.users.find(u => u.email === email);
             if (!user) return res.status(400).json({ msg: 'Invalid Credentials' });
-            
+
             if (user.password !== password) return res.status(400).json({ msg: 'Invalid Credentials' }); // Simple check for mock
 
             const payload = { user: { id: user.id } };
@@ -90,6 +90,29 @@ router.post('/login', async (req, res) => {
             res.json({ token, user: { id: user.id, username: user.username, email: user.email, coins: user.coins } });
         });
 
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// Get Current User
+router.get('/me', require('../middleware/auth'), async (req, res) => {
+    try {
+        if (req.isMockMode) {
+            const mockData = require('../mockData');
+            const user = mockData.users.find(u => u.id === req.user.id);
+            if (!user) return res.status(404).json({ msg: 'User not found' });
+            // remove password
+            const { password, ...userData } = user;
+            return res.json(userData);
+        }
+
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+        res.json(user);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

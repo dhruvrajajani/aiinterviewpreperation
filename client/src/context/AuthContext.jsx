@@ -14,22 +14,13 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          // Verify token or get user data if endpoint exists
-          // For now just assume valid if we have it or implement /me
-          // Let's implement a simple /me check later. For now, decode or persist user.
-          // Better: just load from local storage if we saved it, or fetch.
-          // Since we didn't implement /me yet, I'll rely on stored user object if possible or just token presence + basic state.
-          // Ideally:
-          // const res = await api.get('/auth/user');
-          // setUser(res.data);
-          
-          // Fallback:
-          const storedUser = localStorage.getItem('user');
-          if (storedUser) setUser(JSON.parse(storedUser));
-          
+            api.defaults.headers.common['x-auth-token'] = token;
+            const res = await api.get('/auth/me');
+            setUser(res.data);
         } catch (error) {
-          console.error(error);
+          console.error('Error fetching user:', error);
           localStorage.removeItem('token');
+          // delete api.defaults.headers.common['x-auth-token'];
         }
       }
       setLoading(false);

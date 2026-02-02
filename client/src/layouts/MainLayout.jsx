@@ -21,7 +21,7 @@ const MainLayout = () => {
       <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter">
-            <Sparkles className="text-secondary" />
+            <img src="/logo.png" alt="InterviewPrep" className="h-12 w-12" />
             <span>Interview<span className="text-primary">Prep</span></span>
           </Link>
 

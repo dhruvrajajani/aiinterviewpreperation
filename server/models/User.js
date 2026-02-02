@@ -19,6 +19,36 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    bio: {
+        type: String,
+        default: ''
+    },
+    currentPosition: {
+        type: String,
+        default: ''
+    },
+    skills: [String],
+    avatar: {
+        type: String,
+        default: ''
+    },
+    banner: {
+        type: String,
+        default: ''
+    },
+    resume: {
+        type: String,
+        default: ''
+    },
+    socialLinks: {
+        github: { type: String, default: '' },
+        linkedin: { type: String, default: '' },
+        portfolio: { type: String, default: '' }
+    },
+    location: {
+        type: String,
+        default: ''
+    },
     badges: [String],
     solvedQuestions: [{
         type: mongoose.Schema.Types.ObjectId,
