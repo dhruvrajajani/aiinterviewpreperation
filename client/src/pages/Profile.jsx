@@ -8,7 +8,7 @@ import {
 import api from '../utils/api';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -113,10 +113,12 @@ const Profile = () => {
       try {
           // Send all data including avatar/banner paths
           await api.put('/users/profile', formData);
-          window.location.reload(); 
+          // Refresh user data from server
+          await refreshUser();
           setIsEditing(false);
       } catch (err) {
           console.error(err);
+          alert('Failed to update profile. Please try again.');
       } finally {
           setLoading(false);
       }

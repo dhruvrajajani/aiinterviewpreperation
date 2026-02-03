@@ -36,8 +36,16 @@ const MainLayout = () => {
                 
                 <div className="flex items-center gap-4 pl-6 border-l border-white/10">
                   <div className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center font-bold text-white">
-                          {user.username ? user.username[0].toUpperCase() : 'U'}
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center font-bold text-white overflow-hidden">
+                          {user.avatar ? (
+                              <img 
+                                  src={user.avatar.startsWith('http') ? user.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar}`} 
+                                  alt={user.username} 
+                                  className="w-full h-full object-cover" 
+                              />
+                          ) : (
+                              user.username ? user.username[0].toUpperCase() : 'U'
+                          )}
                       </div>
                       <Link to="/profile" className="font-medium max-w-[100px] truncate">{user.username}</Link>
                   </div>
@@ -78,8 +86,16 @@ const MainLayout = () => {
                             
                             <div className="pt-2 flex items-center justify-between">
                                  <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 font-medium">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center font-bold text-white">
-                                        {user.username ? user.username[0].toUpperCase() : 'U'}
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center font-bold text-white overflow-hidden">
+                                        {user.avatar ? (
+                                            <img 
+                                                src={user.avatar.startsWith('http') ? user.avatar : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar}`} 
+                                                alt={user.username} 
+                                                className="w-full h-full object-cover" 
+                                            />
+                                        ) : (
+                                            user.username ? user.username[0].toUpperCase() : 'U'
+                                        )}
                                     </div>
                                     {user.username}
                                  </Link>
