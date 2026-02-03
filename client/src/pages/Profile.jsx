@@ -125,7 +125,7 @@ const Profile = () => {
   const getImageUrl = (path) => {
       if (!path) return null;
       if (path.startsWith('http')) return path;
-      return `http://localhost:5000${path}`;
+      return `http://localhost:4000${path}`;
   };
 
   if (!user) return <div className="p-10 text-center text-muted">Loading profile...</div>;
