@@ -31,16 +31,18 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
     localStorage.setItem('token', res.data.token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    setUser(res.data.user);
+    // Fetch fresh user data from /auth/me to ensure we have all fields
+    const userRes = await api.get('/auth/me');
+    setUser(userRes.data);
     return res.data;
   };
 
   const register = async (username, email, password) => {
     const res = await api.post('/auth/register', { username, email, password });
     localStorage.setItem('token', res.data.token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    setUser(res.data.user);
+    // Fetch fresh user data from /auth/me to ensure we have all fields
+    const userRes = await api.get('/auth/me');
+    setUser(userRes.data);
     return res.data;
   };
 
@@ -50,8 +52,19 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const refreshUser = async () => {
+    try {
+      const res = await api.get('/auth/me');
+      setUser(res.data);
+      return res.data;
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, refreshUser, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );

@@ -9,7 +9,7 @@ const Footer = () => {
                     {/* Brand */}
                     <div className="md:col-span-1">
                         <Link to="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter mb-4">
-                            <Sparkles className="text-secondary" />
+                            <img src="/logo.png" alt="InterviewPrep" className="h-10 w-10" />
                             <span>Interview<span className="text-primary">Prep</span></span>
                         </Link>
                         <p className="text-muted text-sm leading-relaxed">
