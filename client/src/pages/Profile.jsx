@@ -125,7 +125,11 @@ const Profile = () => {
   const getImageUrl = (path) => {
       if (!path) return null;
       if (path.startsWith('http')) return path;
-      return `http://localhost:4000${path}`;
+      // Use the API base URL from environment variable
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      // Remove '/api' suffix to get the base server URL
+      const baseUrl = apiBaseUrl.replace('/api', '');
+      return `${baseUrl}${path}`;
   };
 
   if (!user) return <div className="p-10 text-center text-muted">Loading profile...</div>;
