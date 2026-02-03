@@ -10,22 +10,10 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkUser = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-            api.defaults.headers.common['x-auth-token'] = token;
-            const res = await api.get('/auth/me');
-            setUser(res.data);
-        } catch (error) {
-          console.error('Error fetching user:', error);
-          localStorage.removeItem('token');
-          // delete api.defaults.headers.common['x-auth-token'];
-        }
-      }
-      setLoading(false);
-    };
-    checkUser();
+    // Clear token on app load to prevent auto-login
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setLoading(false);
   }, []);
 
   const login = async (email, password) => {
