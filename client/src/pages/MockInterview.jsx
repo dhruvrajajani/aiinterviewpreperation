@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Send, Mic, Play, Pause, X, Bot, User, Award, ArrowRight, Settings } from 'lucide-react';
+import api from '../utils/api';
 
 const MockInterview = () => {
     const [status, setStatus] = useState('setup'); // setup, active, completed
@@ -213,7 +214,21 @@ const MockInterview = () => {
                      setIsTyping(false);
                  } else {
                      setMessages(prev => [...prev, { id: Date.now() + 3, sender: 'ai', text: "That wraps up our technical session. I have a good sense of your skills now." }]);
-                     setTimeout(() => setStatus('completed'), 2500);
+                     
+                     // Save interview session to backend
+                     setTimeout(async () => {
+                         try {
+                             await api.post('/dashboard/interview/complete', {
+                                 type: topic.toLowerCase(),
+                                 questions: [],
+                                 overallScore: score / 10, // Convert to 1-5 scale
+                                 duration: 15 // Approximate minutes
+                             });
+                         } catch (error) {
+                             console.error('Error saving interview session:', error);
+                         }
+                         setStatus('completed');
+                     }, 2500);
                  }
             }, isCorrect ? 2000 : 5000); // Longer pause if user needs to read correction
 

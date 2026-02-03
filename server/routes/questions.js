@@ -68,14 +68,40 @@ router.post('/submit/:id', auth, async (req, res) => {
 
         const user = await User.findById(req.user.id);
 
+        // Track only if not already solved
         if (!user.solvedQuestions.includes(question.id)) {
             user.solvedQuestions.push(question.id);
-            user.coins += question.points;
-            user.streak += 1; // Simple streak logic
+
+            // Use activity tracker
+            const { trackActivity, updateUserStats, awardCoins } = require('../utils/activityTracker');
+
+            // Award coins
+            const coinsEarned = question.points || 10;
+            await awardCoins(req.user.id, coinsEarned);
+
+            // Track daily activity
+            await trackActivity(req.user.id, {
+                questionsSolved: 1,
+                coinsEarned: coinsEarned
+            });
+
+            // Update user stats
+            await updateUserStats(req.user.id, {
+                questionsSolved: true,
+                difficulty: question.difficulty
+            });
+
             await user.save();
         }
 
-        res.json({ success: true, points: question.points, coins: user.coins });
+        // Fetch updated user for response
+        const updatedUser = await User.findById(req.user.id);
+        res.json({
+            success: true,
+            points: question.points,
+            coins: updatedUser.coins,
+            streak: updatedUser.streak
+        });
 
     } catch (err) {
         console.error(err.message);

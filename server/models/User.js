@@ -61,6 +61,29 @@ const UserSchema = new mongoose.Schema({
     lastActive: {
         type: Date,
         default: Date.now
+    },
+    stats: {
+        totalQuestionsSolved: {
+            type: Number,
+            default: 0
+        },
+        questionsByDifficulty: {
+            easy: { type: Number, default: 0 },
+            medium: { type: Number, default: 0 },
+            hard: { type: Number, default: 0 }
+        },
+        interviewsCompleted: {
+            type: Number,
+            default: 0
+        },
+        averageInterviewScore: {
+            type: Number,
+            default: 0
+        },
+        resumesCreated: {
+            type: Number,
+            default: 0
+        }
     }
 }, { timestamps: true });
 

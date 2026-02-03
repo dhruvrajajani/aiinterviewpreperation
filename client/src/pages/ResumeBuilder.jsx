@@ -4,6 +4,7 @@ import jsPDF from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, User, Briefcase, GraduationCap, Code, Sparkles, ChevronRight, ChevronLeft, Download, LayoutTemplate, Palette, CheckCircle, FolderGit2, BookOpen, Link as LinkIcon, Github } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '../utils/api';
 
 const ResumeBuilder = () => {
     const [step, setStep] = useState(1);
@@ -81,8 +82,17 @@ const ResumeBuilder = () => {
         setFormData({ ...formData, [type]: newArray });
     };
 
-    const handleGenerate = () => {
+
+    const handleGenerate = async () => {
         setGenerating(true);
+        
+        // Track resume creation
+        try {
+            await api.post('/resume/created');
+        } catch (error) {
+            console.error('Error tracking resume creation:', error);
+        }
+        
         setTimeout(() => {
             setGenerating(false);
             setGenerated(true);
