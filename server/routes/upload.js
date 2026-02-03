@@ -46,8 +46,14 @@ router.post('/', upload.single('image'), (req, res) => {
             return res.status(400).json({ msg: 'No file uploaded' });
         }
 
+        // Log file details for debugging
+        console.log('📁 File uploaded successfully:');
+        console.log('   - Original name:', req.file.originalname);
+        console.log('   - Saved as:', req.file.filename);
+        console.log('   - Full path:', req.file.path);
+        console.log('   - Size:', (req.file.size / 1024).toFixed(2), 'KB');
+
         // Return browser-accessible path
-        // We will serve 'uploads' folder as static in server.js mapped to /uploads
         const filePath = `/uploads/${req.file.filename}`;
 
         res.json({

@@ -1,27 +1,21 @@
-// Quick diagnostic script to test if upload route is registered
-const express = require('express');
-const app = express();
+const fs = require('fs');
+const path = require('path');
 
-// Try to load the upload route
-try {
-    const uploadRoute = require('./routes/upload');
-    app.use('/api/upload', uploadRoute);
-    console.log('✓ Upload route loaded successfully');
+// Create a dummy file in uploads folder
+const uploadsDir = path.join(__dirname, 'uploads');
+const testFilePath = path.join(uploadsDir, 'test-file.txt');
 
-    // Start test server
-    const server = app.listen(5001, () => {
-        console.log('✓ Test server running on port 5001');
-        console.log('Test the upload endpoint with:');
-        console.log('  curl -X POST http://localhost:5001/api/upload');
-
-        // Auto-close after 30 seconds
-        setTimeout(() => {
-            server.close();
-            console.log('Test server closed');
-            process.exit(0);
-        }, 30000);
-    });
-} catch (error) {
-    console.error('✗ Error loading upload route:', error.message);
-    process.exit(1);
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('✅ Created uploads directory');
 }
+
+// Create a test file
+fs.writeFileSync(testFilePath, 'This is a test file to verify uploads folder is working.');
+console.log('✅ Test file created at:', testFilePath);
+
+// List all files in uploads
+const files = fs.readdirSync(uploadsDir);
+console.log('\n📁 Files in uploads folder:', files);
+console.log('\n✅ Upload folder is working correctly!');
