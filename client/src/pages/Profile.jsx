@@ -522,18 +522,39 @@ const Profile = () => {
                                         </div>
                                         <div>
                                             <div className="font-medium text-white">My Resume</div>
-                                            <div className="text-xs text-muted">Click to download</div>
+                                            <div className="text-xs text-muted">Click to download or delete</div>
                                         </div>
                                     </div>
-                                    <a 
-                                        href={getImageUrl(user.resume)} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors text-white"
-                                        download
-                                    >
-                                        <Download size={20} />
-                                    </a>
+                                    <div className="flex gap-2">
+                                        <a 
+                                            href={getImageUrl(user.resume)} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors text-white"
+                                            download
+                                            title="Download Resume"
+                                        >
+                                            <Download size={20} />
+                                        </a>
+                                        <button
+                                            onClick={async () => {
+                                                if (window.confirm('Are you sure you want to delete your resume? This action cannot be undone.')) {
+                                                    try {
+                                                        await api.delete('/users/resume');
+                                                        await refreshUser();
+                                                        alert('Resume deleted successfully');
+                                                    } catch (error) {
+                                                        console.error('Error deleting resume:', error);
+                                                        alert('Failed to delete resume');
+                                                    }
+                                                }
+                                            }}
+                                            className="p-2 bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors text-red-400 hover:text-red-300"
+                                            title="Delete Resume"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
                                 <p className="text-muted">No resume uploaded yet.</p>

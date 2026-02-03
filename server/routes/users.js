@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const fs = require('fs');
+const path = require('path');
 
 // @route   PUT api/users/profile
 // @desc    Update user profile
@@ -70,6 +72,40 @@ router.put('/profile', auth, async (req, res) => {
         ).select('-password');
 
         res.json(user);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   DELETE /api/users/resume
+// @desc    Delete user's resume
+// @access  Private
+router.delete('/resume', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // If user has a resume, delete the file
+        if (user.resume) {
+            const resumePath = path.join(__dirname, '..', user.resume);
+
+            // Check if file exists and delete it
+            if (fs.existsSync(resumePath)) {
+                fs.unlinkSync(resumePath);
+            }
+
+            // Clear resume from database
+            user.resume = '';
+            await user.save();
+
+            res.json({ msg: 'Resume deleted successfully', user });
+        } else {
+            res.status(400).json({ msg: 'No resume to delete' });
+        }
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
