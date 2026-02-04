@@ -56,26 +56,26 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       {/* Header Section */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-10"
+        className="mb-6 sm:mb-10"
       >
-        <h1 className="text-4xl font-bold mb-3">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
           Welcome back, <span className="gradient-text">{user?.username}</span>! 👋
         </h1>
-        <p className="text-muted text-lg mb-6">Here's your progress overview</p>
+        <p className="text-muted text-base sm:text-lg mb-4 sm:mb-6">Here's your progress overview</p>
         
         {/* Quick Actions */}
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/coding')}
-            className="btn btn-primary flex items-center gap-2"
+            className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <Code size={20} /> Solve Problems
           </motion.button>
@@ -83,7 +83,7 @@ const Dashboard = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/interview')}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors w-full sm:w-auto"
           >
             <MessageSquare size={20} /> Start Interview
           </motion.button>
@@ -91,7 +91,7 @@ const Dashboard = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/resume')}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors w-full sm:w-auto"
           >
             <FileText size={20} /> Create Resume
           </motion.button>
