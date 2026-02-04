@@ -63,6 +63,8 @@ const Profile = () => {
       const file = e.target.files[0];
       if (!file) return;
 
+      console.log('📤 Uploading file:', file.name, 'Size:', (file.size / 1024).toFixed(2), 'KB');
+
       const uploadData = new FormData();
       uploadData.append('image', file);
 
@@ -70,23 +72,15 @@ const Profile = () => {
           const res = await api.post('/upload', uploadData, {
               headers: { 'Content-Type': 'multipart/form-data' }
           });
-          // Assuming backend returns relative path, prepend API URL if needed 
-          // or just store the path and let img src handle it (standard way is holding '/uploads/file.png')
-          // We need to make sure the Frontend knows the full URL or relative base.
-          // For now, let's assume '/uploads/...' is accessible from root relative to domain.
-          // Since React runs on 5173 and server on 5000, we need the full URL or a proxy.
-          // The API helper probably has baseURL set. We need to construct the full URL for display if it's just a path.
-          // Let's store the path returned by server. Display logic will prepend server URL.
           
-          // Actually, let's check api utils. If it's axios instance, we can't easily get base url.
-          // Better: backend returns full url or we hardcode localhost:5000/uploads (bad practice).
-          // Let's assume we store the relative path and the image src uses: `http://localhost:5000${path}`
-          // To be cleaner, let's define a helper for image URLs.
+          console.log('✅ Upload success! Server response:', res.data);
+          console.log('📁 File saved at:', res.data.filePath);
           
           setFormData(prev => ({ ...prev, [field]: res.data.filePath }));
+          alert('File uploaded successfully!');
       } catch (err) {
-          console.error("Upload failed", err);
-          alert("File upload failed. Please ensure it is a valid image or document under 5MB.");
+          console.error('❌ Upload failed:', err.response?.data || err.message);
+          alert('File upload failed. Please ensure it is a valid image or document under 5MB.');
       }
   };
 

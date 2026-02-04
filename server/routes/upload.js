@@ -40,30 +40,38 @@ const upload = multer({
 // @route   POST api/upload
 // @desc    Upload an image
 // @access  Public (or Private if needed, usually Private but keeping simple for now)
-router.post('/', upload.single('image'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ msg: 'No file uploaded' });
+router.post('/', (req, res) => {
+    upload.single('image')(req, res, function (err) {
+        if (err) {
+            console.error('❌ Multer Error:', err.message);
+            return res.status(400).json({ msg: 'Upload error: ' + err.message });
         }
 
-        // Log file details for debugging
-        console.log('📁 File uploaded successfully:');
-        console.log('   - Original name:', req.file.originalname);
-        console.log('   - Saved as:', req.file.filename);
-        console.log('   - Full path:', req.file.path);
-        console.log('   - Size:', (req.file.size / 1024).toFixed(2), 'KB');
+        try {
+            if (!req.file) {
+                console.log('❌ No file received in request');
+                return res.status(400).json({ msg: 'No file uploaded' });
+            }
 
-        // Return browser-accessible path
-        const filePath = `/uploads/${req.file.filename}`;
+            // Log file details for debugging
+            console.log('📁 File uploaded successfully:');
+            console.log('   - Original name:', req.file.originalname);
+            console.log('   - Saved as:', req.file.filename);
+            console.log('   - Full path:', req.file.path);
+            console.log('   - Size:', (req.file.size / 1024).toFixed(2), 'KB');
 
-        res.json({
-            msg: 'File uploaded successfully',
-            filePath: filePath
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
+            // Return browser-accessible path
+            const filePath = `/uploads/${req.file.filename}`;
+
+            res.json({
+                msg: 'File uploaded successfully',
+                filePath: filePath
+            });
+        } catch (error) {
+            console.error('❌ Server error:', error);
+            res.status(500).send('Server Error');
+        }
+    });
 });
 
 module.exports = router;
