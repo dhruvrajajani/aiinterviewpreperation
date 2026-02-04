@@ -112,4 +112,48 @@ router.delete('/resume', auth, async (req, res) => {
     }
 });
 
+// @route   DELETE /api/users/avatar
+// @desc    Delete user's avatar
+// @access  Private
+router.delete('/avatar', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // Clear avatar (Cloudinary URL, no local file to delete)
+        user.avatar = '';
+        await user.save();
+
+        res.json({ msg: 'Avatar deleted successfully', user });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   DELETE /api/users/banner
+// @desc    Delete user's banner
+// @access  Private
+router.delete('/banner', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // Clear banner (Cloudinary URL, no local file to delete)
+        user.banner = '';
+        await user.save();
+
+        res.json({ msg: 'Banner deleted successfully', user });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;

@@ -154,13 +154,36 @@ const Profile = () => {
             )}
             
             {isEditing && (
-                <button 
-                    type="button"
-                    onClick={() => bannerInputRef.current.click()}
-                    className="absolute top-4 right-4 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors text-white"
-                >
-                    <Camera size={20} />
-                </button>
+                <>
+                    <button 
+                        type="button"
+                        onClick={() => bannerInputRef.current.click()}
+                        className="absolute top-4 right-16 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors text-white"
+                    >
+                        <Camera size={20} />
+                    </button>
+                    {formData.banner && (
+                        <button
+                            onClick={async () => {
+                                if (window.confirm('Delete banner image?')) {
+                                    try {
+                                        await api.delete('/users/banner');
+                                        await refreshUser();
+                                        setFormData(prev => ({ ...prev, banner: '' }));
+                                        alert('Banner deleted successfully');
+                                    } catch (error) {
+                                        console.error('Error deleting banner:', error);
+                                        alert('Failed to delete banner');
+                                    }
+                                }
+                            }}
+                            className="absolute top-4 right-4 bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full backdrop-blur-sm transition-colors shadow-lg"
+                            title="Delete Banner"
+                        >
+                            <Trash2 size={20} />
+                        </button>
+                    )}
+                </>
             )}
             <input 
                 type="file" 
@@ -189,7 +212,28 @@ const Profile = () => {
                          </div>
                     )}
                 </div>
-                <div className="absolute bottom-2 right-2 z-20">
+                <div className="absolute bottom-2 right-2 z-20 flex gap-2">
+                     {formData.avatar && isEditing && (
+                         <button
+                             onClick={async () => {
+                                 if (window.confirm('Delete profile picture?')) {
+                                     try {
+                                         await api.delete('/users/avatar');
+                                         await refreshUser();
+                                         setFormData(prev => ({ ...prev, avatar: '' }));
+                                         alert('Avatar deleted successfully');
+                                     } catch (error) {
+                                         console.error('Error deleting avatar:', error);
+                                         alert('Failed to delete avatar');
+                                     }
+                                 }
+                             }}
+                             className="bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full backdrop-blur-sm transition-colors shadow-lg"
+                             title="Delete Avatar"
+                         >
+                             <Trash2 size={16} />
+                         </button>
+                     )}
                      <button 
                         onClick={() => setIsEditing(!isEditing)}
                          className="bg-black/50 hover:bg-black/70 text-white p-2 rounded-full backdrop-blur-sm transition-colors shadow-lg border-2 border-surface"
@@ -522,21 +566,11 @@ const Profile = () => {
                                             <FileText size={24} className="text-blue-400" />
                                         </div>
                                         <div>
-                                            <div className="font-medium text-white">My Resume</div>
-                                            <div className="text-xs text-muted">Click to download or delete</div>
+                                             <div className="font-medium text-white">My Resume</div>
+                                            <div className="text-xs text-muted">Click to delete</div>
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
-                                        <a 
-                                            href={getDownloadUrl(getImageUrl(user.resume))} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors text-white"
-                                            download
-                                            title="Download Resume"
-                                        >
-                                            <Download size={20} />
-                                        </a>
                                         <button
                                             onClick={async () => {
                                                 if (window.confirm('Are you sure you want to delete your resume? This action cannot be undone.')) {
