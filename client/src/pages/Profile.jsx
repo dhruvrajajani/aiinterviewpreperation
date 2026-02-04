@@ -164,17 +164,9 @@ const Profile = () => {
                     </button>
                     {formData.banner && (
                         <button
-                            onClick={async () => {
+                            onClick={() => {
                                 if (window.confirm('Delete banner image?')) {
-                                    try {
-                                        await api.delete('/users/banner');
-                                        await refreshUser();
-                                        setFormData(prev => ({ ...prev, banner: '' }));
-                                        alert('Banner deleted successfully');
-                                    } catch (error) {
-                                        console.error('Error deleting banner:', error);
-                                        alert('Failed to delete banner');
-                                    }
+                                    setFormData(prev => ({ ...prev, banner: '' }));
                                 }
                             }}
                             className="absolute top-4 right-4 bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full backdrop-blur-sm transition-colors shadow-lg"
@@ -215,17 +207,9 @@ const Profile = () => {
                 <div className="absolute bottom-2 right-2 z-20 flex gap-2">
                      {formData.avatar && isEditing && (
                          <button
-                             onClick={async () => {
+                             onClick={() => {
                                  if (window.confirm('Delete profile picture?')) {
-                                     try {
-                                         await api.delete('/users/avatar');
-                                         await refreshUser();
-                                         setFormData(prev => ({ ...prev, avatar: '' }));
-                                         alert('Avatar deleted successfully');
-                                     } catch (error) {
-                                         console.error('Error deleting avatar:', error);
-                                         alert('Failed to delete avatar');
-                                     }
+                                     setFormData(prev => ({ ...prev, avatar: '' }));
                                  }
                              }}
                              className="bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full backdrop-blur-sm transition-colors shadow-lg"
@@ -235,7 +219,23 @@ const Profile = () => {
                          </button>
                      )}
                      <button 
-                        onClick={() => setIsEditing(!isEditing)}
+                        onClick={() => {
+                            setIsEditing(!isEditing);
+                            // Reset formData to original user data when canceling
+                            if (isEditing) {
+                                setFormData({
+                                    username: user.username,
+                                    bio: user.bio || '',
+                                    currentPosition: user.currentPosition || '',
+                                    location: user.location || '',
+                                    skills: user.skills || [],
+                                    socialLinks: user.socialLinks || {},
+                                    avatar: user.avatar || '',
+                                    banner: user.banner || '',
+                                    resume: user.resume || ''
+                                });
+                            }
+                        }}
                          className="bg-black/50 hover:bg-black/70 text-white p-2 rounded-full backdrop-blur-sm transition-colors shadow-lg border-2 border-surface"
                          title={isEditing ? "Cancel Editing" : "Edit Profile"}
                      >
