@@ -128,6 +128,16 @@ const Profile = () => {
       return `${baseUrl}${path}`;
   };
 
+  const getDownloadUrl = (url) => {
+      if (!url) return null;
+      // If it's a Cloudinary URL, add download flag
+      if (url.includes('cloudinary.com')) {
+          // Insert fl_attachment before the version number
+          return url.replace('/upload/', '/upload/fl_attachment/');
+      }
+      return url;
+  };
+
   if (!user) return <div className="p-10 text-center text-muted">Loading profile...</div>;
 
   return (
@@ -521,7 +531,7 @@ const Profile = () => {
                                     </div>
                                     <div className="flex gap-2">
                                         <a 
-                                            href={getImageUrl(user.resume)} 
+                                            href={getDownloadUrl(getImageUrl(user.resume))} 
                                             target="_blank" 
                                             rel="noopener noreferrer"
                                             className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors text-white"
