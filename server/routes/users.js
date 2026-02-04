@@ -4,6 +4,28 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const fs = require('fs');
 const path = require('path');
+const cloudinary = require('cloudinary').v2;
+
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Helper function to extract public_id from Cloudinary URL
+const getPublicIdFromUrl = (url) => {
+    if (!url || !url.includes('cloudinary.com')) return null;
+    // URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/v{version}/{folder}/{public_id}.{ext}
+    const parts = url.split('/');
+    const uploadIndex = parts.indexOf('upload');
+    if (uploadIndex === -1) return null;
+    // Get everything after 'upload/v{version}/'
+    const pathParts = parts.slice(uploadIndex + 2); // Skip 'upload' and version
+    const publicIdWithExt = pathParts.join('/');
+    // Remove file extension
+    return publicIdWithExt.substring(0, publicIdWithExt.lastIndexOf('.'));
+};
 
 // @route   PUT api/users/profile
 // @desc    Update user profile
@@ -61,10 +83,6 @@ router.put('/profile', auth, async (req, res) => {
 
         if (!user) return res.status(404).json({ msg: 'User not found' });
 
-        // Update fields individually to avoid overwriting entire object if using findOneAndUpdate with strict replacement, 
-        // though $set in findOneAndUpdate is better. Let's use simple assignment and save.
-        // Actually findOneAndUpdate is cleaner.
-
         user = await User.findOneAndUpdate(
             { _id: req.user.id },
             { $set: profileFields },
@@ -89,13 +107,18 @@ router.delete('/resume', auth, async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        // If user has a resume, delete the file
         if (user.resume) {
-            const resumePath = path.join(__dirname, '..', user.resume);
-
-            // Check if file exists and delete it
-            if (fs.existsSync(resumePath)) {
-                fs.unlinkSync(resumePath);
+            // Delete from Cloudinary if it's a Cloudinary URL
+            if (user.resume.includes('cloudinary.com')) {
+                const publicId = getPublicIdFromUrl(user.resume);
+                if (publicId) {
+                    try {
+                        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+                        console.log('✅ Resume deleted from Cloudinary:', publicId);
+                    } catch (error) {
+                        console.error('⚠️ Cloudinary deletion failed:', error.message);
+                    }
+                }
             }
 
             // Clear resume from database
@@ -123,7 +146,20 @@ router.delete('/avatar', auth, async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        // Clear avatar (Cloudinary URL, no local file to delete)
+        // Delete from Cloudinary if it's a Cloudinary URL
+        if (user.avatar && user.avatar.includes('cloudinary.com')) {
+            const publicId = getPublicIdFromUrl(user.avatar);
+            if (publicId) {
+                try {
+                    await cloudinary.uploader.destroy(publicId);
+                    console.log('✅ Avatar deleted from Cloudinary:', publicId);
+                } catch (error) {
+                    console.error('⚠️ Cloudinary deletion failed:', error.message);
+                }
+            }
+        }
+
+        // Clear avatar from database
         user.avatar = '';
         await user.save();
 
@@ -145,7 +181,20 @@ router.delete('/banner', auth, async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        // Clear banner (Cloudinary URL, no local file to delete)
+        // Delete from Cloudinary if it's a Cloudinary URL
+        if (user.banner && user.banner.includes('cloudinary.com')) {
+            const publicId = getPublicIdFromUrl(user.banner);
+            if (publicId) {
+                try {
+                    await cloudinary.uploader.destroy(publicId);
+                    console.log('✅ Banner deleted from Cloudinary:', publicId);
+                } catch (error) {
+                    console.error('⚠️ Cloudinary deletion failed:', error.message);
+                }
+            }
+        }
+
+        // Clear banner from database
         user.banner = '';
         await user.save();
 
