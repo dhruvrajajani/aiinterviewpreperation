@@ -130,11 +130,8 @@ const Profile = () => {
 
   const getDownloadUrl = (url) => {
       if (!url) return null;
-      // If it's a Cloudinary URL, add download flag
-      if (url.includes('cloudinary.com')) {
-          // Insert fl_attachment before the version number
-          return url.replace('/upload/', '/upload/fl_attachment/');
-      }
+      // Return URL as-is - browser's download attribute will handle it
+      // fl_attachment doesn't work for raw files in free tier
       return url;
   };
 
