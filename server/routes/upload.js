@@ -47,11 +47,13 @@ router.post('/', (req, res) => {
             }
 
             console.log('📤 Uploading to Cloudinary:', req.file.originalname);
+            console.log('📄 File type:', req.file.mimetype);
 
-            // Determine resource type based on file extension
-            const isPDF = req.file.originalname.toLowerCase().endsWith('.pdf');
-            const isDoc = req.file.originalname.toLowerCase().match(/\.(doc|docx)$/);
-            const resourceType = (isPDF || isDoc) ? 'raw' : 'image';
+            // Determine resource type based on mimetype
+            const isImage = req.file.mimetype.startsWith('image/');
+            const resourceType = isImage ? 'image' : 'raw';
+
+            console.log('📦 Resource type:', resourceType);
 
             // Convert buffer to base64 for Cloudinary upload
             const b64 = Buffer.from(req.file.buffer).toString('base64');
