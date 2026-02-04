@@ -22,9 +22,27 @@ const Profile = () => {
       socialLinks: { github: '', linkedin: '', portfolio: '' }
   });
   
+  const [pendingFiles, setPendingFiles] = useState({
+      avatar: null,
+      banner: null,
+      resume: null
+  });
+  const [previewUrls, setPreviewUrls] = useState({
+      avatar: null,
+      banner: null,
+      resume: null
+  });
   const bannerInputRef = useRef(null);
   const avatarInputRef = useRef(null);
   const resumeInputRef = useRef(null);
+  // NEW: Cleanup blob URLs on unmount
+  useEffect(() => {
+      return () => {
+          Object.values(previewUrls).forEach(url => {
+              if (url) URL.revokeObjectURL(url);
+          });
+      };
+  }, [previewUrls]);
 
   useEffect(() => {
     if (user) {
@@ -59,29 +77,19 @@ const Profile = () => {
       }
   };
 
-  const handleFileChange = async (e, field) => {
+  const handleFileChange = (e, field) => {
       const file = e.target.files[0];
       if (!file) return;
-
-      console.log('📤 Uploading file:', file.name, 'Size:', (file.size / 1024).toFixed(2), 'KB');
-
-      const uploadData = new FormData();
-      uploadData.append('image', file);
-
-      try {
-          const res = await api.post('/upload', uploadData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
-          });
-          
-          console.log('✅ Upload success! Server response:', res.data);
-          console.log('📁 File saved at:', res.data.filePath);
-          
-          setFormData(prev => ({ ...prev, [field]: res.data.filePath }));
-          alert('File uploaded successfully!');
-      } catch (err) {
-          console.error('❌ Upload failed:', err.response?.data || err.message);
-          alert('File upload failed. Please ensure it is a valid image or document under 5MB.');
-      }
+      console.log('📎 File selected:', file.name, '- Will upload on Save');
+      
+      // Store file for later upload
+      setPendingFiles(prev => ({ ...prev, [field]: file }));
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewUrls(prev => ({ ...prev, [field]: previewUrl }));
+      
+      alert(`${file.name} ready. Click "Save Changes" to upload.`);
   };
 
   const handleSkillAdd = (e) => {
@@ -105,11 +113,48 @@ const Profile = () => {
       e.preventDefault();
       setLoading(true);
       try {
-          // Send all data including avatar/banner paths
-          await api.put('/users/profile', formData);
-          // Refresh user data from server
+          const uploadedPaths = { ...formData };
+          
+          // Upload pending files
+          for (const [field, file] of Object.entries(pendingFiles)) {
+              if (file) {
+                  console.log(`📤 Uploading ${field}:`, file.name);
+                  const uploadData = new FormData();
+                  uploadData.append('image', file);
+                  
+                  const res = await api.post('/upload', uploadData, {
+                      headers: { 'Content-Type': 'multipart/form-data' }
+                  });
+                  
+                  uploadedPaths[field] = res.data.filePath;
+                  console.log(`✅ ${field} uploaded`);
+              }
+          }
+          // Handle deletions
+          if (user.avatar && !uploadedPaths.avatar && !pendingFiles.avatar) {
+              await api.delete('/users/avatar');
+          }
+          if (user.banner && !uploadedPaths.banner && !pendingFiles.banner) {
+              await api.delete('/users/banner');
+          }
+          if (user.resume && !uploadedPaths.resume && !pendingFiles.resume) {
+              await api.delete('/users/resume');
+          }
+          // Update profile
+          await api.put('/users/profile', uploadedPaths);
           await refreshUser();
+          
+          // Clear pending files
+          setPendingFiles({ avatar: null, banner: null, resume: null });
+          
+          // Cleanup preview URLs
+          Object.values(previewUrls).forEach(url => {
+              if (url) URL.revokeObjectURL(url);
+          });
+          setPreviewUrls({ avatar: null, banner: null, resume: null });
+          
           setIsEditing(false);
+          alert('Profile updated successfully!');
       } catch (err) {
           console.error(err);
           alert('Failed to update profile. Please try again.');
@@ -118,21 +163,19 @@ const Profile = () => {
       }
   };
 
-  const getImageUrl = (path) => {
+  const getImageUrl = (path, field) => {
+      // Check for preview URLs first
+      if (field === 'avatar' && previewUrls.avatar) return previewUrls.avatar;
+      if (field === 'banner' && previewUrls.banner) return previewUrls.banner;
+      if (field === 'resume' && previewUrls.resume) return previewUrls.resume;
+      
       if (!path) return null;
       if (path.startsWith('http')) return path;
-      // Use the API base URL from environment variable
+      if (path.startsWith('blob:')) return path;
+      
       const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      // Remove '/api' suffix to get the base server URL
       const baseUrl = apiBaseUrl.replace('/api', '');
       return `${baseUrl}${path}`;
-  };
-
-  const getDownloadUrl = (url) => {
-      if (!url) return null;
-      // Return URL as-is - browser's download attribute will handle it
-      // fl_attachment doesn't work for raw files in free tier
-      return url;
   };
 
   if (!user) return <div className="p-10 text-center text-muted">Loading profile...</div>;
@@ -148,7 +191,7 @@ const Profile = () => {
         {/* Banner */}
         <div className="h-40 bg-gradient-to-r from-primary/80 to-secondary/80 relative overflow-hidden">
             {formData.banner ? (
-                <img src={getImageUrl(formData.banner)} alt="Banner" className="w-full h-full object-cover" />
+                <img src={getImageUrl(formData.banner,'banner')} alt="Banner" className="w-full h-full object-cover" />
             ) : (
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
             )}
@@ -191,7 +234,7 @@ const Profile = () => {
                 {/* Avatar */}
                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl border-4 border-background bg-surface shadow-xl flex items-center justify-center text-4xl sm:text-5xl font-bold bg-gradient-to-br from-surface to-background-light overflow-hidden relative">
                     {formData.avatar ? (
-                        <img src={getImageUrl(formData.avatar)} alt="Avatar" className="w-full h-full object-cover" />
+                        <img src={getImageUrl(formData.avatar,'avatar')} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
                         <span className="bg-clip-text text-transparent bg-gradient-to-br from-primary to-secondary">
                             {user.username?.[0]?.toUpperCase()}
@@ -219,23 +262,32 @@ const Profile = () => {
                          </button>
                      )}
                      <button 
-                        onClick={() => {
-                            setIsEditing(!isEditing);
-                            // Reset formData to original user data when canceling
-                            if (isEditing) {
-                                setFormData({
-                                    username: user.username,
-                                    bio: user.bio || '',
-                                    currentPosition: user.currentPosition || '',
-                                    location: user.location || '',
-                                    skills: user.skills || [],
-                                    socialLinks: user.socialLinks || {},
-                                    avatar: user.avatar || '',
-                                    banner: user.banner || '',
-                                    resume: user.resume || ''
-                                });
-                            }
-                        }}
+   onClick={() => {
+       setIsEditing(!isEditing);
+       // Reset formData to original user data when canceling
+       if (isEditing) {
+           setFormData({
+               username: user.username,
+               bio: user.bio || '',
+               currentPosition: user.currentPosition || '',
+               location: user.location || '',
+               skills: user.skills || [],
+               socialLinks: user.socialLinks || {},
+               avatar: user.avatar || '',
+               banner: user.banner || '',
+               resume: user.resume || ''
+           });
+           
+           // NEW: Clear pending files
+           setPendingFiles({ avatar: null, banner: null, resume: null });
+           
+           // NEW: Cleanup preview URLs
+           Object.values(previewUrls).forEach(url => {
+               if (url) URL.revokeObjectURL(url);
+           });
+           setPreviewUrls({ avatar: null, banner: null, resume: null });
+       }
+   }}
                          className="bg-black/50 hover:bg-black/70 text-white p-2 rounded-full backdrop-blur-sm transition-colors shadow-lg border-2 border-surface"
                          title={isEditing ? "Cancel Editing" : "Edit Profile"}
                      >

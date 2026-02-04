@@ -10,15 +10,25 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Clear token on app load to prevent auto-login
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setLoading(false);
+    // Check for active session on load
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      api.get('/auth/me')
+        .then(res => setUser(res.data))
+        .catch(err => {
+          console.error('Session restore failed:', err);
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('user');
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', res.data.token);
+    sessionStorage.setItem('token', res.data.token);
     // Fetch fresh user data from /auth/me to ensure we have all fields
     const userRes = await api.get('/auth/me');
     setUser(userRes.data);
@@ -27,7 +37,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     const res = await api.post('/auth/register', { username, email, password });
-    localStorage.setItem('token', res.data.token);
+    sessionStorage.setItem('token', res.data.token);
     // Fetch fresh user data from /auth/me to ensure we have all fields
     const userRes = await api.get('/auth/me');
     setUser(userRes.data);
@@ -35,8 +45,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     setUser(null);
   };
 
