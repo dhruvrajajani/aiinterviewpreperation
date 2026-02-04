@@ -53,7 +53,11 @@ router.post('/', (req, res) => {
             const isImage = req.file.mimetype.startsWith('image/');
             const resourceType = isImage ? 'image' : 'raw';
 
+            // Extract file extension from original filename
+            const fileExtension = path.extname(req.file.originalname);
+
             console.log('📦 Resource type:', resourceType);
+            console.log('📎 Extension:', fileExtension);
 
             // Convert buffer to base64 for Cloudinary upload
             const b64 = Buffer.from(req.file.buffer).toString('base64');
@@ -63,7 +67,8 @@ router.post('/', (req, res) => {
             const result = await cloudinary.uploader.upload(dataURI, {
                 folder: 'interviewprep',
                 resource_type: resourceType,
-                public_id: `${req.file.fieldname}-${Date.now()}`
+                public_id: `${req.file.fieldname}-${Date.now()}`,
+                format: fileExtension.replace('.', '') || (isImage ? 'jpg' : 'pdf')
             });
 
             console.log('✅ Cloudinary upload success!');
