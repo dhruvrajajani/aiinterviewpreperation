@@ -1,26 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 const path = require('path');
 const fs = require('fs');
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Storage Strategy
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        // Create unique string: fieldname-timestamp.ext
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+// Use memory storage for multer (no local files)
+const storage = multer.memoryStorage();
 
 // File Filter
 const fileFilter = (req, file, cb) => {
@@ -38,10 +31,10 @@ const upload = multer({
 });
 
 // @route   POST api/upload
-// @desc    Upload an image
-// @access  Public (or Private if needed, usually Private but keeping simple for now)
+// @desc    Upload a file to Cloudinary
+// @access  Public
 router.post('/', (req, res) => {
-    upload.single('image')(req, res, function (err) {
+    upload.single('image')(req, res, async function (err) {
         if (err) {
             console.error('❌ Multer Error:', err.message);
             return res.status(400).json({ msg: 'Upload error: ' + err.message });
@@ -53,23 +46,36 @@ router.post('/', (req, res) => {
                 return res.status(400).json({ msg: 'No file uploaded' });
             }
 
-            // Log file details for debugging
-            console.log('📁 File uploaded successfully:');
-            console.log('   - Original name:', req.file.originalname);
-            console.log('   - Saved as:', req.file.filename);
-            console.log('   - Full path:', req.file.path);
-            console.log('   - Size:', (req.file.size / 1024).toFixed(2), 'KB');
+            console.log('📤 Uploading to Cloudinary:', req.file.originalname);
 
-            // Return browser-accessible path
-            const filePath = `/uploads/${req.file.filename}`;
+            // Determine resource type based on file extension
+            const isPDF = req.file.originalname.toLowerCase().endsWith('.pdf');
+            const isDoc = req.file.originalname.toLowerCase().match(/\.(doc|docx)$/);
+            const resourceType = (isPDF || isDoc) ? 'raw' : 'image';
 
+            // Convert buffer to base64 for Cloudinary upload
+            const b64 = Buffer.from(req.file.buffer).toString('base64');
+            const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+
+            // Upload to Cloudinary
+            const result = await cloudinary.uploader.upload(dataURI, {
+                folder: 'interviewprep',
+                resource_type: resourceType,
+                public_id: `${req.file.fieldname}-${Date.now()}`
+            });
+
+            console.log('✅ Cloudinary upload success!');
+            console.log('   - URL:', result.secure_url);
+            console.log('   - Public ID:', result.public_id);
+
+            // Return the Cloudinary URL
             res.json({
                 msg: 'File uploaded successfully',
-                filePath: filePath
+                filePath: result.secure_url
             });
         } catch (error) {
-            console.error('❌ Server error:', error);
-            res.status(500).send('Server Error');
+            console.error('❌ Cloudinary upload error:', error);
+            res.status(500).json({ msg: 'Upload failed: ' + error.message });
         }
     });
 });
