@@ -170,10 +170,10 @@ const Profile = () => {
             />
         </div>
         
-        <div className="relative z-10 px-8 pb-8 flex flex-col md:flex-row items-end -mt-16 gap-6">
+        <div className="relative z-10 px-4 sm:px-8 pb-6 sm:pb-8 flex flex-col sm:flex-row items-center sm:items-end -mt-12 sm:-mt-16 gap-4 sm:gap-6">
             <div className="relative group">
                 {/* Avatar */}
-                <div className="w-32 h-32 rounded-2xl border-4 border-background bg-surface shadow-xl flex items-center justify-center text-5xl font-bold bg-gradient-to-br from-surface to-background-light overflow-hidden relative">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl border-4 border-background bg-surface shadow-xl flex items-center justify-center text-4xl sm:text-5xl font-bold bg-gradient-to-br from-surface to-background-light overflow-hidden relative">
                     {formData.avatar ? (
                         <img src={getImageUrl(formData.avatar)} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
@@ -206,26 +206,26 @@ const Profile = () => {
                 />
             </div>
             
-    <div className="flex-1 pb-2">
+    <div className="flex-1 pb-2 text-center sm:text-left w-full min-w-0">
                 <div className="flex justify-between items-start">
-                    <div className="w-full">
+                    <div className="w-full min-w-0">
                         {isEditing ? (
                             <input
                                 type="text"
                                 name="username"
                                 value={formData.username || user.username}
                                 onChange={handleChange}
-                                className="text-4xl font-bold bg-transparent border-b border-white/10 focus:border-primary outline-none w-full mb-1"
+                                className="text-2xl sm:text-3xl md:text-4xl font-bold bg-transparent border-b border-white/10 focus:border-primary outline-none w-full mb-1"
                             />
                         ) : (
-                            <h1 className="text-4xl font-bold">{user.username}</h1>
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold break-words overflow-hidden text-ellipsis">{user.username}</h1>
                         )}
-                        <p className="text-xl text-muted mt-1 flex items-center gap-2">
-                             {user.currentPosition || "Coding Enthusiast"}
+                        <p className="text-base sm:text-xl text-muted mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                             <span className="truncate max-w-full">{user.currentPosition || "Coding Enthusiast"}</span>
                              {user.location && (
                                 <>
-                                    <span className="w-1 h-1 rounded-full bg-muted"></span>
-                                    <span className="text-sm flex items-center gap-1"><MapPin size={14}/> {user.location}</span>
+                                    <span className="w-1 h-1 rounded-full bg-muted hidden sm:block"></span>
+                                    <span className="text-xs sm:text-sm flex items-center gap-1"><MapPin size={14}/> {user.location}</span>
                                 </>
                              )}
                         </p>
