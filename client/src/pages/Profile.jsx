@@ -369,41 +369,41 @@ const Profile = () => {
                 </h3>
                 <div className="space-y-3">
                     {user.email && (
-                        <div className="flex items-center gap-3 text-muted hover:text-white transition-colors">
-                            <Mail size={18} /> {user.email}
+                        <div className="flex items-center gap-3 text-muted hover:text-white transition-colors overflow-hidden">
+                            <Mail size={18} className="shrink-0" /> <span className="truncate">{user.email}</span>
                         </div>
                     )}
                     {(formData.socialLinks?.github || isEditing) && (
-                         <div className="flex items-center gap-3 text-muted hover:text-white transition-colors">
-                            <Github size={18} /> 
+                         <div className="flex items-center gap-3 text-muted hover:text-white transition-colors overflow-hidden">
+                            <Github size={18} className="shrink-0" /> 
                             {isEditing ? (
-                                <span className="text-sm">Link via Edit Form</span>
+                                <span className="text-sm truncate">Link via Edit Form</span>
                             ) : (
-                                <a href={formData.socialLinks?.github} target="_blank" rel="noreferrer" className="cursor-pointer hover:underline">
+                                <a href={formData.socialLinks?.github} target="_blank" rel="noreferrer" className="cursor-pointer hover:underline truncate">
                                     {formData.socialLinks?.github ? "GitHub Profile" : "Add GitHub"}
                                 </a>
                             )}
                         </div>
                     )}
                      {(formData.socialLinks?.linkedin || isEditing) && (
-                         <div className="flex items-center gap-3 text-muted hover:text-white transition-colors">
-                            <Linkedin size={18} /> 
+                         <div className="flex items-center gap-3 text-muted hover:text-white transition-colors overflow-hidden">
+                            <Linkedin size={18} className="shrink-0" /> 
                             {isEditing ? (
-                                <span className="text-sm">Link via Edit Form</span>
+                                <span className="text-sm truncate">Link via Edit Form</span>
                             ) : (
-                                <a href={formData.socialLinks?.linkedin} target="_blank" rel="noreferrer" className="cursor-pointer hover:underline">
+                                <a href={formData.socialLinks?.linkedin} target="_blank" rel="noreferrer" className="cursor-pointer hover:underline truncate">
                                      {formData.socialLinks?.linkedin ? "LinkedIn Profile" : "Add LinkedIn"}
                                 </a>
                             )}
                         </div>
                     )}
                       {(formData.socialLinks?.portfolio || isEditing) && (
-                         <div className="flex items-center gap-3 text-muted hover:text-white transition-colors">
-                            <Globe size={18} /> 
+                         <div className="flex items-center gap-3 text-muted hover:text-white transition-colors overflow-hidden">
+                            <Globe size={18} className="shrink-0" /> 
                             {isEditing ? (
-                                <span className="text-sm">Link via Edit Form</span>
+                                <span className="text-sm truncate">Link via Edit Form</span>
                             ) : (
-                                <a href={formData.socialLinks?.portfolio} target="_blank" rel="noreferrer" className="cursor-pointer hover:underline">
+                                <a href={formData.socialLinks?.portfolio} target="_blank" rel="noreferrer" className="cursor-pointer hover:underline truncate">
                                      {formData.socialLinks?.portfolio ? "Portfolio" : "Add Portfolio"}
                                 </a>
                             )}

@@ -1,97 +1,46 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
-// Register
-router.post('/register', async (req, res) => {
+// Sync user from Clerk to our DB
+router.post('/sync', require('../middleware/auth'), async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const clerkId = req.auth.userId;
+        const { email, username, avatar } = req.body; 
 
-        if (req.isMockMode) {
-            const mockData = require('../mockData');
-            let user = mockData.users.find(u => u.email === email);
-            if (user) return res.status(400).json({ msg: 'User already exists' });
+        if (!clerkId || !email) {
+            return res.status(400).json({ msg: 'Clerk ID and email are required' });
+        }
 
-            user = {
-                id: Date.now().toString(),
-                username,
+        let user = await User.findOne({ clerkId });
+        if (!user) {
+            // New user, create them in our DB
+            let baseUsername = (username || email.split('@')[0]).replace(/\s+/g, '').toLowerCase();
+            let finalUsername = baseUsername;
+            let exists = await User.findOne({ username: finalUsername });
+            while (exists) {
+                finalUsername = `${baseUsername}${Math.floor(Math.random() * 10000)}`;
+                exists = await User.findOne({ username: finalUsername });
+            }
+
+            user = new User({
+                clerkId,
                 email,
-                password, // In mock mode, we store plain text or simple hash
-                coins: 0,
-                streak: 0
-            };
-            mockData.users.push(user);
-
-            const payload = { user: { id: user.id } };
-            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
-                if (err) throw err;
-                res.json({ token, user: { id: user.id, username: user.username, email: user.email, coins: user.coins } });
+                username: finalUsername,
+                avatar: avatar || ''
             });
-            return;
+            await user.save();
+        } else {
+            // Existing user, update avatar if necessary
+            if (avatar && user.avatar !== avatar) {
+                user.avatar = avatar;
+                await user.save();
+            }
         }
 
-        let user = await User.findOne({ email });
-        if (user) return res.status(400).json({ msg: 'User already exists' });
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        user = new User({
-            username,
-            email,
-            password: hashedPassword
-        });
-
-        await user.save();
-
-        const payload = { user: { id: user.id } };
-        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
-            if (err) throw err;
-            res.json({ token, user: { id: user.id, username: user.username, email: user.email, coins: user.coins } });
-        });
-
+        res.json(user);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
-
-// Login
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        if (req.isMockMode) {
-            const mockData = require('../mockData');
-            let user = mockData.users.find(u => u.email === email);
-            if (!user) return res.status(400).json({ msg: 'Invalid Credentials' });
-
-            if (user.password !== password) return res.status(400).json({ msg: 'Invalid Credentials' }); // Simple check for mock
-
-            const payload = { user: { id: user.id } };
-            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
-                if (err) throw err;
-                res.json({ token, user: { id: user.id, username: user.username, email: user.email, coins: user.coins } });
-            });
-            return;
-        }
-
-        let user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ msg: 'Invalid Credentials' });
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ msg: 'Invalid Credentials' });
-
-        const payload = { user: { id: user.id } };
-        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
-            if (err) throw err;
-            res.json({ token, user: { id: user.id, username: user.username, email: user.email, coins: user.coins } });
-        });
-
-    } catch (err) {
-        console.error(err.message);
+        console.error('Sync Error:', err.message);
         res.status(500).send('Server Error');
     }
 });
@@ -99,16 +48,10 @@ router.post('/login', async (req, res) => {
 // Get Current User
 router.get('/me', require('../middleware/auth'), async (req, res) => {
     try {
-        if (req.isMockMode) {
-            const mockData = require('../mockData');
-            const user = mockData.users.find(u => u.id === req.user.id);
-            if (!user) return res.status(404).json({ msg: 'User not found' });
-            // remove password
-            const { password, ...userData } = user;
-            return res.json(userData);
+        if (!req.user || !req.user.id) {
+            return res.status(404).json({ msg: 'User profile not yet synced to DB' });
         }
-
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }

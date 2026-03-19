@@ -9,10 +9,17 @@ const api = axios.create({
 
 // Add a request interceptor to inject the token
 api.interceptors.request.use(
-    (config) => {
-        const token = sessionStorage.getItem('token');
-        if (token) {
-            config.headers['x-auth-token'] = token;
+    async (config) => {
+        // Automatically attach Clerk token if available
+        if (window.Clerk && window.Clerk.session) {
+            try {
+                const token = await window.Clerk.session.getToken();
+                if (token) {
+                    config.headers['Authorization'] = `Bearer ${token}`;
+                }
+            } catch (err) {
+                console.error("Error getting Clerk token:", err);
+            }
         }
         return config;
     },

@@ -11,9 +11,10 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    password: {
+    clerkId: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     coins: {
         type: Number,

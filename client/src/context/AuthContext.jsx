@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
+import { useAuth as useClerkAuth, useUser as useClerkUser } from '@clerk/clerk-react';
 import api from '../utils/api';
 
 const AuthContext = createContext();
@@ -6,49 +7,36 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const { isLoaded: authLoaded, isSignedIn } = useClerkAuth();
+  const { user: clerkUser, isLoaded: userLoaded } = useClerkUser();
+  const [user, setUser] = useState(null); // Database profile mapping
   const [loading, setLoading] = useState(true);
 
+  // Sync with backend whenever clerk auth state changes
   useEffect(() => {
-    // Check for active session on load
-    const token = sessionStorage.getItem('token');
-    if (token) {
-      api.get('/auth/me')
-        .then(res => setUser(res.data))
-        .catch(err => {
-          console.error('Session restore failed:', err);
-          sessionStorage.removeItem('token');
-          sessionStorage.removeItem('user');
-        })
-        .finally(() => setLoading(false));
-    } else {
+    const syncUser = async () => {
+      if (!authLoaded || !userLoaded) return;
+      
+      if (isSignedIn && clerkUser) {
+        try {
+          // Token is automatically attached by api.js
+          const res = await api.post('/auth/sync', {
+            email: clerkUser.primaryEmailAddress?.emailAddress,
+            username: clerkUser.username || clerkUser.fullName,
+            avatar: clerkUser.imageUrl
+          });
+          setUser(res.data);
+        } catch (err) {
+          console.error("Error syncing user with system database:", err);
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
-    }
-  }, []);
+    };
 
-  const login = async (email, password) => {
-    const res = await api.post('/auth/login', { email, password });
-    sessionStorage.setItem('token', res.data.token);
-    // Fetch fresh user data from /auth/me to ensure we have all fields
-    const userRes = await api.get('/auth/me');
-    setUser(userRes.data);
-    return res.data;
-  };
-
-  const register = async (username, email, password) => {
-    const res = await api.post('/auth/register', { username, email, password });
-    sessionStorage.setItem('token', res.data.token);
-    // Fetch fresh user data from /auth/me to ensure we have all fields
-    const userRes = await api.get('/auth/me');
-    setUser(userRes.data);
-    return res.data;
-  };
-
-  const logout = () => {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    setUser(null);
-  };
+    syncUser();
+  }, [isSignedIn, clerkUser, authLoaded, userLoaded]);
 
   const refreshUser = async () => {
     try {
@@ -62,8 +50,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, refreshUser, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, refreshUser, loading: loading || !authLoaded || !userLoaded }}>
+      {!loading && authLoaded && userLoaded && children}
     </AuthContext.Provider>
   );
 };
