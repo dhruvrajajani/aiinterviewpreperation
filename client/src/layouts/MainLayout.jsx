@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAuth as useClerkAuth } from '@clerk/clerk-react';
 import { Sparkles, LogOut, User as UserIcon, Menu, X } from 'lucide-react';
 import Footer from '../components/Footer';
 
 const MainLayout = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const { signOut } = useClerkAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/');
     setIsMobileMenuOpen(false);
   };
