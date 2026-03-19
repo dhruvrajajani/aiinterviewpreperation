@@ -7,7 +7,7 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const { isLoaded: authLoaded, isSignedIn } = useClerkAuth();
+  const { isLoaded: authLoaded, isSignedIn, getToken } = useClerkAuth();
   const { user: clerkUser, isLoaded: userLoaded } = useClerkUser();
   const [user, setUser] = useState(null); // Database profile mapping
   const [loading, setLoading] = useState(true);
@@ -19,15 +19,18 @@ export const AuthProvider = ({ children }) => {
       
       if (isSignedIn && clerkUser) {
         try {
-          // Token is automatically attached by api.js
+          const token = await getToken();
           const res = await api.post('/auth/sync', {
             email: clerkUser.primaryEmailAddress?.emailAddress,
             username: clerkUser.username || clerkUser.fullName,
             avatar: clerkUser.imageUrl
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
           });
           setUser(res.data);
         } catch (err) {
           console.error("Error syncing user with system database:", err);
+          // If sync fails, we still consider loading complete, but user is null
         }
       } else {
         setUser(null);
@@ -36,7 +39,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     syncUser();
-  }, [isSignedIn, clerkUser, authLoaded, userLoaded]);
+  }, [isSignedIn, clerkUser, authLoaded, userLoaded, getToken]);
 
   const refreshUser = async () => {
     try {
