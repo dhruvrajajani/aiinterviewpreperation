@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema({
     },
     coins: {
         type: Number,
-        default: 0
+        default: 100
     },
     bio: {
         type: String,

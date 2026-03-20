@@ -75,8 +75,8 @@ router.post('/submit/:id', auth, async (req, res) => {
             // Use activity tracker
             const { trackActivity, updateUserStats, awardCoins } = require('../utils/activityTracker');
 
-            // Award coins
-            const coinsEarned = question.points || 10;
+            // Award coins exclusively for DSA question
+            const coinsEarned = 5;
             await awardCoins(req.user.id, coinsEarned);
 
             // Track daily activity

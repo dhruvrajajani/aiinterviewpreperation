@@ -141,8 +141,17 @@ router.post('/interview/complete', auth, async (req, res) => {
     try {
         const { type, questions, overallScore, duration } = req.body;
 
-        const { trackActivity, updateUserStats } = require('../utils/activityTracker');
+        const { trackActivity, updateUserStats, awardCoins } = require('../utils/activityTracker');
         const InterviewSession = require('../models/InterviewSession');
+
+        // Check coin balance before saving interview
+        const user = await User.findById(req.user.id);
+        if (user.coins < 10) {
+            return res.status(400).json({ msg: 'Not enough coins. Saving an interview costs 10 coins.' });
+        }
+
+        // Deduct coins
+        await awardCoins(req.user.id, -10);
 
         // Create interview session
         const session = new InterviewSession({
@@ -159,7 +168,7 @@ router.post('/interview/complete', auth, async (req, res) => {
         // Track activity
         await trackActivity(req.user.id, {
             interviewsCompleted: 1,
-            coinsEarned: Math.floor(overallScore) * 2 // 2 coins per score point
+            coinsEarned: -10
         });
 
         // Update user stats

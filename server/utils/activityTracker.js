@@ -43,8 +43,10 @@ const trackActivity = async (userId, activityData) => {
             await activity.save();
         }
 
-        // Update streak
-        await updateStreak(userId);
+        // Update streak only if user completed coding challenges
+        if (activityData.questionsSolved) {
+            await updateStreak(userId);
+        }
 
         return activity;
     } catch (error) {
@@ -137,10 +139,13 @@ const updateStreak = async (userId) => {
             } else if (daysSinceActive > 1) {
                 // Streak broken - reset
                 user.streak = 1;
+            } else if (daysSinceActive === 0 && (user.streak === 0 || !user.streak)) {
+                // First day activity for new users
+                user.streak = 1;
             }
-            // If same day (daysSinceActive === 0), keep streak as is
+            // If same day and streak > 0, do nothing (keep streak as is)
         } else {
-            // First time active
+            // First time active ever
             user.streak = 1;
         }
 
@@ -162,6 +167,7 @@ const awardCoins = async (userId, amount) => {
         if (!user) return;
 
         user.coins = (user.coins || 0) + amount;
+        if (user.coins < 0) user.coins = 0; // Prevent negative balances
         await user.save();
 
         return user.coins;

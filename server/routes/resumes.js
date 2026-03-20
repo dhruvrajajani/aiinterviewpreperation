@@ -9,14 +9,20 @@ const auth = require('../middleware/auth');
 router.post('/created', auth, async (req, res) => {
     try {
         const { trackActivity, updateUserStats, awardCoins } = require('../utils/activityTracker');
+        const User = require('../models/User');
 
-        // Award coins for creating resume
-        await awardCoins(req.user.id, 20);
+        const user = await User.findById(req.user.id);
+        if (user.coins < 10) {
+            return res.status(400).json({ msg: 'Not enough coins. Creating a resume costs 10 coins.' });
+        }
+
+        // Deduct coins for creating resume
+        await awardCoins(req.user.id, -10);
 
         // Track activity
         await trackActivity(req.user.id, {
             resumesCreated: 1,
-            coinsEarned: 20
+            coinsEarned: -10
         });
 
         // Update stats

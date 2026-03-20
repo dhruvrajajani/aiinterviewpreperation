@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Terminal, ExternalLink, Filter, Search, Building2, Signal } from 'lucide-react';
+import { Terminal, ExternalLink, Filter, Search, Building2, Signal, CheckCircle } from 'lucide-react';
 import api from '../utils/api';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const CodingArena = () => {
+    const { user, refreshUser } = useAuth();
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(null);
+    const [clickedLeetCode, setClickedLeetCode] = useState(new Set());
     const [filterDifficulty, setFilterDifficulty] = useState('All');
     const [filterCompany, setFilterCompany] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
@@ -23,6 +28,26 @@ const CodingArena = () => {
         };
         fetchQuestions();
     }, []);
+
+    const handleMarkSolved = async (id) => {
+        try {
+            setSubmitting(id);
+            const res = await api.post(`/questions/submit/${id}`);
+            if (res.data.success) {
+                toast.success(`Success! +5 Coins. Current Streak: ${res.data.streak} 🔥`);
+                if (refreshUser) refreshUser();
+            }
+        } catch (err) {
+            console.error('Error marking solved:', err);
+            toast.error(err.response?.data?.msg || 'Error marking question as solved');
+        } finally {
+            setSubmitting(null);
+        }
+    };
+
+    const handleLeetCodeClick = (id) => {
+        setClickedLeetCode(prev => new Set(prev).add(id));
+    };
 
     // Extract unique companies for filter
     const allCompanies = ['All', ...new Set(questions.flatMap(q => q.companies || []))];
@@ -145,18 +170,39 @@ const CodingArena = () => {
                                 ))}
                             </div>
 
-                            <a 
-                                href={q.link || '#'} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${
-                                    q.link 
-                                    ? 'bg-primary/10 text-primary hover:bg-primary hover:text-white' 
-                                    : 'bg-white/5 text-muted cursor-not-allowed'
-                                }`}
-                            >
-                                {q.link ? 'Solve Challenge' : 'Link Unavailable'} <ExternalLink size={16} />
-                            </a>
+                            <div className="flex gap-2 mt-auto">
+                                <a 
+                                    href={q.link || '#'} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    onClick={() => handleLeetCodeClick(q._id)}
+                                    className={`flex-1 py-2 rounded-lg font-bold flex items-center justify-center gap-2 text-sm transition-all ${
+                                        q.link 
+                                        ? 'bg-white/10 text-white hover:bg-white/20' 
+                                        : 'bg-white/5 text-muted cursor-not-allowed'
+                                    }`}
+                                >
+                                    LeetCode <ExternalLink size={14} />
+                                </a>
+                                <button 
+                                    onClick={() => handleMarkSolved(q._id)}
+                                    disabled={submitting === q._id || user?.solvedQuestions?.includes(q._id) || !clickedLeetCode.has(q._id)}
+                                    title={user?.solvedQuestions?.includes(q._id) ? "You have already claimed this reward!" : !clickedLeetCode.has(q._id) ? "You must open the LeetCode link first to unlock this button!" : "Claim completion reward"}
+                                    className={`flex-1 py-2 rounded-lg font-bold flex items-center justify-center gap-1 text-sm transition-all ${
+                                        user?.solvedQuestions?.includes(q._id)
+                                        ? 'bg-green-500/20 text-green-400 cursor-default'
+                                        : !clickedLeetCode.has(q._id)
+                                        ? 'bg-white/5 text-muted cursor-not-allowed'
+                                        : 'bg-primary text-white hover:bg-indigo-600 disabled:opacity-50'
+                                    }`}
+                                >
+                                    {submitting === q._id ? 'Verifying...' : user?.solvedQuestions?.includes(q._id) ? (
+                                        <>Solved <CheckCircle size={14} /></>
+                                    ) : (
+                                        <>Mark Solved <CheckCircle size={14} /></>
+                                    )}
+                                </button>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
