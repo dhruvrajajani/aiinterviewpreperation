@@ -40,8 +40,8 @@ router.post('/sync', require('../middleware/auth'), async (req, res) => {
 
         res.json(user);
     } catch (err) {
-        console.error('Sync Error:', err.message);
-        res.status(500).send('Server Error');
+        console.error('Sync Error Full:', err);
+        res.status(500).json({ msg: 'Server Error', detail: err.message });
     }
 });
 
