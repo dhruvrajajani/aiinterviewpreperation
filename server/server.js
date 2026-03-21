@@ -1,11 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { clerkMiddleware } = require('@clerk/express');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
 const app = express();
+app.use(clerkMiddleware()); // must be before all routes
 const PORT = process.env.PORT || 5000;
 
 // Middleware

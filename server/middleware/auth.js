@@ -1,30 +1,31 @@
-const { ClerkExpressRequireAuth } = require('@clerk/clerk-sdk-node');
+const { clerkMiddleware, getAuth } = require('@clerk/express');
 const User = require('../models/User');
-
-const clerkAuth = ClerkExpressRequireAuth();
 
 module.exports = function (req, res, next) {
     if (req.isMockMode) {
-        // Simple mock mode passthrough if needed
         req.user = { id: req.headers['x-mock-user-id'] || 'mock-id' };
         return next();
     }
 
-    clerkAuth(req, res, async (err) => {
+    // Use modern @clerk/express middleware
+    clerkMiddleware()(req, res, async (err) => {
         if (err) {
-            console.error('Clerk Auth Error:', err);
-            return res.status(401).json({ msg: 'Token is not valid' });
+            console.error('Clerk Middleware Error:', err);
+            return res.status(401).json({ msg: 'Authentication failed', detail: err.message });
         }
-        
-        if (req.auth && req.auth.userId) {
-            try {
-                const user = await User.findOne({ clerkId: req.auth.userId });
+
+        try {
+            const auth = getAuth(req);
+            req.auth = auth; // expose for routes that need clerkId directly
+
+            if (auth && auth.userId) {
+                const user = await User.findOne({ clerkId: auth.userId });
                 if (user) {
                     req.user = { id: user._id };
                 }
-            } catch (dbErr) {
-                console.error('DB User Lookup Error:', dbErr);
             }
+        } catch (dbErr) {
+            console.error('DB User Lookup Error:', dbErr);
         }
         next();
     });
