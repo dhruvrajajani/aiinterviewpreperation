@@ -1,19 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-background text-text font-sans antialiased;
+  :root {
+    --color-background: 248 250 252;
+    --color-surface: 255 255 255;
+    --color-text: 15 23 42;
+    --color-muted: 100 116 139;
+    --color-border: 226 232 240;
   }
+
+  .dark {
+    --color-background: 10 15 28;
+    --color-surface: 17 24 39;
+    --color-text: 248 250 252;
+    --color-muted: 148 163 184;
+    --color-border: 255 255 255;
+  }
+
+  body {
+    @apply bg-background text-text font-sans antialiased selection:bg-primary/30 selection:text-text bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/10 dark:from-indigo-900/10 via-background to-background min-h-screen relative transition-colors duration-300;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight text-text;
+  }
+}
+
+/* Ensure rich text formatting renders vividly inside the resume */
+.resume-document b, .resume-document strong {
+  font-weight: 700 !important;
+}
+.resume-document i, .resume-document em {
+  font-style: italic !important;
+}
+.resume-document u {
+  text-decoration: underline !important;
 }
 
 .gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent;
 }
 
-.glass-card {
-  @apply bg-surface/80 backdrop-blur-lg border border-white/10 rounded-xl shadow-xl;
+.glass-card, .glass-panel {
+  @apply bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] transition-all duration-300;
+}
+
+.glass-panel:hover {
+  @apply border-black/20 dark:border-white/20 bg-white/80 dark:bg-white/[0.05] shadow-[0_8px_32px_0_rgba(99,102,241,0.15)];
+}
+
+.text-glow {
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+}
+
+.style-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.style-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.style-scroll::-webkit-scrollbar-thumb {
+  @apply bg-black/10 dark:bg-white/10 rounded-full hover:bg-black/20 dark:hover:bg-white/20 transition-colors;
 }

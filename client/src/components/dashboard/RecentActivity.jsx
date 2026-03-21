@@ -17,15 +17,15 @@ const ActivityIcon = ({ type }) => {
 const RecentActivity = ({ activities }) => {
     if (!activities || activities.length === 0) {
         return (
-            <div className="glass-card p-8 text-center">
+            <div className="glass-panel p-8 text-center">
                 <p className="text-muted">No recent activity. Start coding to see your progress!</p>
             </div>
         );
     }
 
     return (
-        <div className="glass-card p-6">
-            <h3 className="text-xl font-bold mb-6">Recent Activity</h3>
+        <div className="glass-panel p-8">
+            <h3 className="text-xl font-display font-bold mb-6 tracking-wide">Recent Activity</h3>
             <div className="space-y-4">
                 {activities.map((activity, index) => (
                     <div key={index} className="flex items-start gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors">

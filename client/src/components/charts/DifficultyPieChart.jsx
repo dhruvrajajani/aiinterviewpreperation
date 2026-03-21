@@ -9,7 +9,7 @@ const COLORS = {
 const DifficultyPieChart = ({ stats }) => {
     if (!stats || !stats.questionsByDifficulty) {
         return (
-            <div className="glass-card p-8 text-center">
+            <div className="glass-panel p-8 text-center">
                 <p className="text-muted">No questions solved yet. Start solving to see the breakdown!</p>
             </div>
         );
@@ -20,7 +20,7 @@ const DifficultyPieChart = ({ stats }) => {
 
     if (total === 0) {
         return (
-            <div className="glass-card p-8 text-center">
+            <div className="glass-panel p-8 text-center">
                 <p className="text-muted">No questions solved yet. Start solving to see the breakdown!</p>
             </div>
         );
@@ -45,8 +45,8 @@ const DifficultyPieChart = ({ stats }) => {
     };
 
     return (
-        <div className="glass-card p-6">
-            <h3 className="text-xl font-bold mb-6">Questions by Difficulty</h3>
+        <div className="glass-panel p-6">
+            <h3 className="text-xl font-display font-bold mb-6 tracking-wide">Questions by Difficulty</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                     <Pie

@@ -8,7 +8,6 @@ const InterviewSessionSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['behavioral', 'technical', 'mixed'],
         default: 'mixed'
     },
     questions: [{

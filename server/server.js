@@ -45,6 +45,7 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/resume', require('./routes/resumes'));
+app.use('/api/interview', require('./routes/interview'));
 
 // Serve static assets
 app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));

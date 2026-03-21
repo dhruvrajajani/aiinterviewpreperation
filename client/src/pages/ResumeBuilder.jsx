@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, User, Briefcase, GraduationCap, Code, Sparkles, ChevronRight, ChevronLeft, Download, LayoutTemplate, Palette, CheckCircle, FolderGit2, Link as LinkIcon, Github, Terminal, Type, ALargeSmall } from 'lucide-react';
+import { FileText, User, Briefcase, GraduationCap, Code, Sparkles, ChevronRight, ChevronLeft, Download, LayoutTemplate, Palette, CheckCircle, FolderGit2, Link as LinkIcon, Github, Terminal, Type, ALargeSmall, Bold, Italic, Underline, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,11 @@ import { useAuth } from '../context/AuthContext';
 const ResumeBuilder = () => {
     const { user } = useAuth();
     const [step, setStep] = useState(1);
+    const [mobileView, setMobileView] = useState('edit'); // 'edit' or 'preview'
     const resumeRef = useRef(null);
+    const [isAnalyzingATS, setIsAnalyzingATS] = useState(false);
+    const [atsResult, setAtsResult] = useState(null);
+    const [showAtsModal, setShowAtsModal] = useState(false);
 
     const [selectedTemplate, setSelectedTemplate] = useState('modern');
     const [theme, setTheme] = useState({
@@ -62,7 +66,7 @@ const ResumeBuilder = () => {
 
     const handleArrayChange = (index, field, value, type) => {
         const newArray = [...formData[type]];
-        newArray[index][field] = value;
+        newArray[index] = { ...newArray[index], [field]: value };
         setFormData({ ...formData, [type]: newArray });
     };
 
@@ -81,6 +85,59 @@ const ResumeBuilder = () => {
         const newArray = [...formData[type]];
         newArray.splice(index, 1);
         setFormData({ ...formData, [type]: newArray });
+    };
+
+    const exportWord = async () => {
+        try {
+            await api.post('/resume/created');
+        } catch (error) {
+            console.error('Error tracking resume creation:', error);
+            if (error.response?.status === 400 && error.response.data.msg.includes('coins')) {
+                toast.error("Not enough coins to export resume.");
+                return;
+            }
+        }
+
+        const element = document.querySelector('.resume-print-container');
+        if (!element) return;
+        
+        const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Resume Output</title></head><body>";
+        const footer = "</body></html>";
+        // Convert to DOC format using application/msword type
+        const sourceHTML = header + element.innerHTML + footer;
+        
+        const blob = new Blob(['\\ufeff', sourceHTML], {
+            type: 'application/msword;charset=utf-8'
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const filename = formData.fullName ? formData.fullName.replace(/\\s+/g, '_') : 'Resume';
+        link.download = `${filename}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast.success("Resume downloaded as Word document!");
+    };
+
+    const analyzeATS = async () => {
+        setIsAnalyzingATS(true);
+        try {
+            const res = await api.post('/resume/ats', { resumeData: formData });
+            setAtsResult(res.data);
+            setShowAtsModal(true);
+        } catch (err) {
+            console.error('ATS Error:', err);
+            if (err.response?.status === 400 && err.response.data.msg.includes('coins')) {
+                toast.error("Not enough coins to analyze ATS score.");
+            } else {
+                toast.error("Failed to analyze ATS score.");
+            }
+        } finally {
+            setIsAnalyzingATS(false);
+        }
     };
 
     const downloadPDF = async () => {
@@ -132,7 +189,7 @@ const ResumeBuilder = () => {
                         <h3 className="font-bold uppercase tracking-widest border-b border-white/20 pb-1 mb-3 text-white/90" style={{ fontSize: '0.9em' }}>Skills</h3>
                         <div className="flex flex-wrap gap-2">
                             {data.skills.split(',').filter(s=>s.trim()).map((s, i) => (
-                                <span key={i} className="bg-white/10 px-2 py-1 rounded text-[0.85em]">{s.trim()}</span>
+                                <span key={i} className="bg-white/10 px-2 py-1 rounded text-[0.85em]" dangerouslySetInnerHTML={{ __html: s.trim() }}></span >
                             ))}
                         </div>
                     </div>
@@ -156,7 +213,7 @@ const ResumeBuilder = () => {
                 {data.summary && (
                     <div className="mb-8">
                         <h2 className="font-bold uppercase text-slate-800 border-b-2 border-slate-200 pb-2 mb-4" style={{ fontSize: '1.25em' }}>Professional Summary</h2>
-                        <p className="text-slate-600 leading-relaxed" style={{ fontSize: '1em' }}>{data.summary}</p>
+                        <p className="text-slate-600 leading-relaxed" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: data.summary }}></p>
                     </div>
                 )}
 
@@ -171,7 +228,7 @@ const ResumeBuilder = () => {
                                     <span className="font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full" style={{ fontSize: '0.85em' }}>{exp.duration}</span>
                                 </div>
                                 <div className="font-semibold mb-2" style={{ fontSize: '1em', color: tConfig.accentColor }}>{exp.company}</div>
-                                <p className="text-slate-600 whitespace-pre-line leading-relaxed" style={{ fontSize: '1em' }}>{exp.description}</p>
+                                <p className="text-slate-600 whitespace-pre-line leading-relaxed" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: exp.description }}></p>
                             </div>
                         ))}
                     </div>
@@ -187,7 +244,7 @@ const ResumeBuilder = () => {
                                     {proj.link && <a href={proj.link} target="_blank" rel="noreferrer" className="hover:underline" style={{ fontSize: '0.85em', color: tConfig.accentColor }}>View Project</a>}
                                 </div>
                                 <p className="text-slate-500 font-mono mb-1" style={{ fontSize: '0.85em' }}>{proj.techs}</p>
-                                <p className="text-slate-600" style={{ fontSize: '1em' }}>{proj.description}</p>
+                                <p className="text-slate-600" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: proj.description }}></p>
                             </div>
                         ))}
                     </div>
@@ -213,7 +270,7 @@ const ResumeBuilder = () => {
             {data.summary && (
                <div className="mb-6">
                    <h3 className="font-bold uppercase mb-2 border-b border-gray-300 pb-1" style={{ fontSize: '1em', color: tConfig.accentColor }}>Profile</h3>
-                   <p className="leading-relaxed" style={{ fontSize: '1em' }}>{data.summary}</p>
+                   <p className="leading-relaxed" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: data.summary }}></p>
                </div>
             )}
 
@@ -227,7 +284,7 @@ const ResumeBuilder = () => {
                                 <span>{exp.duration}</span>
                             </div>
                             <div className="italic mb-1" style={{ fontSize: '1em' }}>{exp.role}</div>
-                            <p className="text-gray-700 whitespace-pre-line" style={{ fontSize: '1em' }}>{exp.description}</p>
+                            <p className="text-gray-700 whitespace-pre-line" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: exp.description }}></p>
                         </div>
                     ))}
                 </div>
@@ -242,7 +299,7 @@ const ResumeBuilder = () => {
                                 <span>{proj.title}</span>
                             </div>
                             <p className="italic text-gray-500 mb-1" style={{ fontSize: '0.85em' }}>{proj.techs}</p>
-                            <p className="text-gray-700 whitespace-pre-line" style={{ fontSize: '1em' }}>{proj.description}</p>
+                            <p className="text-gray-700 whitespace-pre-line" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: proj.description }}></p>
                         </div>
                     ))}
                 </div>
@@ -265,7 +322,7 @@ const ResumeBuilder = () => {
             {data.skills && (
                 <div>
                      <h3 className="font-bold uppercase border-b border-gray-300 mb-3 pb-1" style={{ fontSize: '1em', color: tConfig.accentColor }}>Skills</h3>
-                     <p className="" style={{ fontSize: '1em' }}>{data.skills}</p>
+                     <p className="" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: data.skills }}></p>
                 </div>
             )}
         </div>
@@ -289,7 +346,7 @@ const ResumeBuilder = () => {
                             <h3 className="font-black uppercase tracking-widest text-gray-400 mb-4" style={{ fontSize: '0.85em' }}>Core Competencies</h3>
                             <div className="flex flex-col gap-2">
                                 {data.skills.split(',').filter(s=>s.trim()).map((s, i) => (
-                                    <span key={i} className="font-bold text-gray-800" style={{ fontSize: '1em' }}>{s.trim()}</span>
+                                    <span key={i} className="font-bold text-gray-800" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: s.trim() }}></span >
                                 ))}
                             </div>
                         </div>
@@ -312,7 +369,7 @@ const ResumeBuilder = () => {
                 <div className="col-span-2">
                     {data.summary && (
                         <div className="mb-10">
-                           <p className="leading-relaxed text-gray-700 font-medium" style={{ fontSize: '1em' }}>{data.summary}</p>
+                           <p className="leading-relaxed text-gray-700 font-medium" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: data.summary }}></p>
                         </div>
                     )}
 
@@ -326,7 +383,7 @@ const ResumeBuilder = () => {
                                         <span className="font-bold text-gray-400 tracking-wider uppercase" style={{ fontSize: '0.85em' }}>{exp.duration}</span>
                                     </div>
                                     <div className="font-bold mb-3" style={{ fontSize: '1em', color: tConfig.accentColor }}>{exp.company}</div>
-                                    <p className="text-gray-600 leading-relaxed whitespace-pre-line" style={{ fontSize: '1em' }}>{exp.description}</p>
+                                    <p className="text-gray-600 leading-relaxed whitespace-pre-line" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: exp.description }}></p>
                                 </div>
                             ))}
                         </div>
@@ -338,7 +395,7 @@ const ResumeBuilder = () => {
                             {data.projects.map((proj, i) => (
                                 <div key={i} className="mb-6">
                                     <h4 className="font-bold text-gray-900 mb-1" style={{ fontSize: '1em' }}>{proj.title} <span className="text-gray-400 tracking-wide font-normal ml-2" style={{ fontSize: '0.85em' }}>{proj.techs}</span></h4>
-                                    <p className="text-gray-600 leading-relaxed whitespace-pre-line" style={{ fontSize: '1em' }}>{proj.description}</p>
+                                    <p className="text-gray-600 leading-relaxed whitespace-pre-line" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: proj.description }}></p>
                                 </div>
                             ))}
                         </div>
@@ -378,7 +435,7 @@ const ResumeBuilder = () => {
             {data.skills && (
                 <div className="mb-4">
                      <h3 className="font-bold uppercase border-b-[1.5px] border-black mb-2 pb-0.5 tracking-wider" style={{ fontSize: '0.85em' }}>Skills</h3>
-                     <p className="leading-relaxed" style={{ fontSize: '0.85em' }}><span className="font-bold">Technologies:</span> {data.skills}</p>
+                     <p className="leading-relaxed" style={{ fontSize: '0.85em' }}><span className="font-bold">Technologies:</span> <span dangerouslySetInnerHTML={{ __html: data.skills }} /></p>
                 </div>
             )}
 
@@ -394,7 +451,7 @@ const ResumeBuilder = () => {
                             <div className="italic mb-1" style={{ fontSize: '0.85em' }}>{exp.company}</div>
                             <ul className="list-disc pl-5 space-y-1" style={{ fontSize: '0.85em' }}>
                                 {exp.description.split('\n').map(l => l.replace('•','').trim()).filter(l => l).map((line, j) => (
-                                    <li key={j}>{line}</li>
+                                    <li key={j} dangerouslySetInnerHTML={{ __html: line }}></li>
                                 ))}
                             </ul>
                         </div>
@@ -412,7 +469,7 @@ const ResumeBuilder = () => {
                             </div>
                             <ul className="list-disc pl-5 space-y-1 mt-1" style={{ fontSize: '0.85em' }}>
                                 {proj.description.split('\n').map(l => l.replace('•','').trim()).filter(l => l).map((line, j) => (
-                                    <li key={j}>{line}</li>
+                                    <li key={j} dangerouslySetInnerHTML={{ __html: line }}></li>
                                 ))}
                             </ul>
                         </div>
@@ -440,7 +497,7 @@ const ResumeBuilder = () => {
             {/* Summary */}
             {data.summary && (
                <div className="mb-6 pl-4 border-l-[3px] bg-gray-50 p-4 shadow-sm" style={{ borderColor: tConfig.accentColor }}>
-                   <p className="text-gray-700 leading-relaxed italic" style={{ fontSize: '1em' }}>{data.summary}</p>
+                   <p className="text-gray-700 leading-relaxed italic" style={{ fontSize: '1em' }} dangerouslySetInnerHTML={{ __html: data.summary }}></p>
                </div>
             )}
 
@@ -457,7 +514,7 @@ const ResumeBuilder = () => {
                             <div className="font-bold mb-2" style={{ fontSize: '1em', color: tConfig.accentColor }}>{exp.company}</div>
                             <ul className="list-square pl-5 text-gray-700 leading-relaxed space-y-1" style={{ fontSize: '1em' }}>
                                 {exp.description.split('\n').map(l => l.replace('•','').trim()).filter(l => l).map((line, j) => (
-                                    <li key={j}>{line}</li>
+                                    <li key={j} dangerouslySetInnerHTML={{ __html: line }}></li>
                                 ))}
                             </ul>
                         </div>
@@ -484,7 +541,7 @@ const ResumeBuilder = () => {
                          <div className="flex flex-wrap gap-x-3 gap-y-1.5">
                             {data.skills.split(',').filter(s=>s.trim()).map((s, i) => (
                                 <span key={i} className="font-bold text-gray-700 flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded" style={{ fontSize: '0.85em' }}>
-                                    <span className="w-1.5 h-1.5 rounded-sm" style={{ backgroundColor: tConfig.accentColor }}></span> {s.trim()}
+                                    <span className="w-1.5 h-1.5 rounded-sm" style={{ backgroundColor: tConfig.accentColor }}></span><span dangerouslySetInnerHTML={{ __html: s.trim() }} />
                                 </span>
                             ))}
                          </div>
@@ -500,7 +557,7 @@ const ResumeBuilder = () => {
                             <div className="font-bold text-gray-900 mb-0.5" style={{ fontSize: '1em' }}>
                                 {proj.title} {proj.techs && <span className="font-normal italic text-gray-500 px-1">| {proj.techs}</span>}
                             </div>
-                            <p className="text-gray-600 whitespace-pre-line leading-relaxed" style={{ fontSize: '0.85em' }}>{proj.description}</p>
+                            <p className="text-gray-600 whitespace-pre-line leading-relaxed" style={{ fontSize: '0.85em' }} dangerouslySetInnerHTML={{ __html: proj.description }}></p>
                         </div>
                     ))}
                 </div>
@@ -509,34 +566,42 @@ const ResumeBuilder = () => {
     );
 
     return (
-        <div className="min-h-screen pt-24 px-4 md:px-8 max-w-[1700px] mx-auto pb-10">
+        <div className="min-h-screen pt-24 px-4 md:px-8 max-w-full mx-auto pb-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background relative overflow-hidden">
+            
+            {/* Ambient Background Orbs */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full mix-blend-screen filter blur-[100px] opacity-50 animate-pulse no-print pointer-events-none"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-pulse no-print pointer-events-none" style={{ animationDelay: '2s' }}></div>
+
             {/* Header (Hidden in Print) */}
-            <div className="text-center mb-8 no-print">
-                <h1 className="text-4xl font-bold mb-3 flex items-center justify-center gap-3">
-                    <Sparkles className="text-primary" /> Professional Resume Builder
-                </h1>
-                <p className="text-muted text-lg max-w-2xl mx-auto">
+            <div className="text-center mb-10 no-print relative z-10">
+                <motion.h1 
+                    initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} 
+                    className="text-4xl md:text-5xl font-display font-black mb-3 flex items-center justify-center gap-3 bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-gray-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                >
+                    <Sparkles className="text-primary animate-pulse" size={36} /> AI Resume Studio
+                </motion.h1>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="text-gray-400 text-lg max-w-2xl mx-auto">
                     Live split-screen editing. Guaranteed ATS-friendly vector PDF export.
-                </p>
+                </motion.p>
             </div>
 
             {/* Split Screen Container */}
-            <div className="flex flex-col xl:flex-row gap-8 items-start h-full">
+            <div className="flex flex-col xl:flex-row gap-8 items-start h-full max-w-[1700px] mx-auto relative z-10">
                 
                 {/* LEFT PANEL : WIZARD */}
-                <div className="w-full xl:w-[45%] xl:sticky xl:top-24 no-print flex flex-col xl:h-[calc(100vh-140px)]">
+                <div className={`w-full xl:w-[45%] xl:sticky xl:top-24 no-print flex-col xl:h-[calc(100vh-140px)] glass-panel p-5 transition-all duration-500 ${mobileView === 'preview' ? 'hidden xl:flex' : 'flex'}`}>
                     
                     {/* Navigation Steps */}
                     <div className="flex justify-between items-center mb-8 relative px-2 shrink-0">
-                        <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -z-10 rounded-full"></div>
+                        <div className="absolute top-1/2 left-0 w-full h-1 bg-black/10 dark:bg-white/10 -z-10 rounded-full"></div>
                         <div className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-primary to-purple-500 -z-10 rounded-full transition-all duration-500" style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }}></div>
                         
                         {steps.map((s) => (
                             <div key={s.id} onClick={() => setStep(s.id)} className="flex flex-col items-center gap-2 cursor-pointer group">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step === s.id ? 'bg-primary border-primary text-white shadow-[0_0_15px_rgba(99,102,241,0.5)] scale-110' : step > s.id ? 'bg-indigo-900 border-primary text-primary' : 'bg-surface border-white/20 text-muted group-hover:bg-white/10'}`}>
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step === s.id ? 'bg-primary border-primary text-white shadow-[0_0_15px_rgba(99,102,241,0.5)] scale-110' : step > s.id ? 'bg-indigo-900 border-primary text-primary' : 'bg-surface border-black/20 dark:border-white/20 text-muted group-hover:bg-black/5 dark:group-hover:bg-white/10'}`}>
                                     <s.icon size={16} />
                                 </div>
-                                <span className={`text-[10px] uppercase tracking-wider font-bold ${step === s.id ? 'text-white' : 'text-transparent md:text-gray-500'}`}>{s.title}</span>
+                                <span className={`text-[10px] uppercase tracking-wider font-bold ${step === s.id ? 'text-text' : 'text-transparent md:text-muted'}`}>{s.title}</span>
                             </div>
                         ))}
                     </div>
@@ -556,7 +621,7 @@ const ResumeBuilder = () => {
                                                 className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-200 ${
                                                     selectedTemplate === t.id 
                                                     ? 'border-primary shadow-[0_0_20px_rgba(99,102,241,0.2)]' 
-                                                    : 'border-white/10 hover:border-white/30'
+                                                    : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/30'
                                                 }`}
                                             >
                                                 <div className={`h-24 bg-gradient-to-br ${t.color} flex items-center justify-center relative`}>
@@ -586,11 +651,14 @@ const ResumeBuilder = () => {
                                         <FormInput label="GitHub URL" value={formData.github} onChange={(val) => handleInputChange({ target: { value: val } }, 'github')} placeholder="github.com/jane" />
                                         
                                         <div className="md:col-span-2 mt-2">
-                                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">Professional Summary</label>
+                                            <label htmlFor="summary" className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">Professional Summary</label>
                                             <textarea 
+                                                id="summary"
+                                                name="summary"
                                                 value={formData.summary} 
                                                 onChange={(e) => handleInputChange(e, 'summary')}
-                                                className="w-full h-32 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-primary outline-none resize-none transition-all"
+                                                data-field="summary"
+                                                className="w-full h-32 bg-black/5 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded-lg p-3 text-text focus:ring-1 focus:ring-primary outline-none transition-all focus:bg-black/10 dark:focus:bg-black/40 resize-y"
                                                 placeholder="Briefly describe your experience and career goals..."
                                             />
                                         </div>
@@ -607,8 +675,8 @@ const ResumeBuilder = () => {
                                      </h2>
                                      
                                      {formData.experience.map((exp, index) => (
-                                        <div key={index} className="mb-6 p-5 bg-white/5 rounded-xl border border-white/10 relative group">
-                                            {index > 0 && <button onClick={() => removeArrayItem(index, 'experience')} className="absolute top-4 right-4 text-red-400 text-xs font-bold hover:text-red-300">Remove</button>}
+                                        <div key={index} className="mb-6 p-5 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10 relative group">
+                                            {index > 0 && <button onClick={() => removeArrayItem(index, 'experience')} className="absolute top-4 right-4 text-red-500 dark:text-red-400 text-xs font-bold hover:text-red-600 dark:hover:text-red-300">Remove</button>}
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <FormInput label="Job Title" value={exp.role} onChange={(val) => handleArrayChange(index, 'role', val, 'experience')} placeholder="Senior Engineer" />
                                                 <FormInput label="Company" value={exp.company} onChange={(val) => handleArrayChange(index, 'company', val, 'experience')} placeholder="Tech Corp Inc." />
@@ -616,11 +684,14 @@ const ResumeBuilder = () => {
                                                     <FormInput label="Duration" value={exp.duration} onChange={(val) => handleArrayChange(index, 'duration', val, 'experience')} placeholder="Jan 2020 - Present" />
                                                 </div>
                                                 <div className="md:col-span-2 mt-1">
-                                                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">Description & Achievements</label>
+                                                    <label htmlFor={`experience-desc-${index}`} className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">Description & Achievements</label>
                                                     <textarea 
+                                                        id={`experience-desc-${index}`}
+                                                        name={`experience-desc-${index}`}
                                                         value={exp.description} 
                                                         onChange={(e) => handleArrayChange(index, 'description', e.target.value, 'experience')}
-                                                        className="w-full h-28 bg-black/20 border border-white/10 rounded-lg p-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white resize-y"
+                                                        data-field="description" data-index={index} data-type="experience"
+                                                        className="w-full h-28 bg-black/5 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded-lg p-3 text-sm focus:ring-1 focus:ring-primary outline-none text-text transition-all focus:bg-black/10 dark:focus:bg-black/40 resize-y"
                                                         placeholder="• Architected a highly scalable microservices platform...&#10;• Increased rendering performance by 40%..."
                                                     />
                                                 </div>
@@ -639,19 +710,22 @@ const ResumeBuilder = () => {
                                      </h2>
                                      
                                      {formData.projects.map((proj, index) => (
-                                        <div key={index} className="mb-6 p-5 bg-white/5 rounded-xl border border-white/10 relative">
-                                            {index > 0 && <button onClick={() => removeArrayItem(index, 'projects')} className="absolute top-4 right-4 text-red-400 font-bold text-xs hover:text-red-300">Remove</button>}
+                                        <div key={index} className="mb-6 p-5 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10 relative">
+                                            {index > 0 && <button onClick={() => removeArrayItem(index, 'projects')} className="absolute top-4 right-4 text-red-500 dark:text-red-400 font-bold text-xs hover:text-red-600 dark:hover:text-red-300">Remove</button>}
                                             <div className="grid grid-cols-1 gap-4">
                                                 <FormInput label="Project Title" value={proj.title} onChange={(val) => handleArrayChange(index, 'title', val, 'projects')} placeholder="E-commerce Analytics Dashboard" />
                                                 <FormInput label="Technologies Used" value={proj.techs} onChange={(val) => handleArrayChange(index, 'techs', val, 'projects')} placeholder="React, Node.js, TimescaleDB" />
                                                 <FormInput label="External Link" value={proj.link} onChange={(val) => handleArrayChange(index, 'link', val, 'projects')} placeholder="github.com/myproject" />
                                                 
                                                 <div className="mt-1">
-                                                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">Project Summary</label>
+                                                    <label htmlFor={`projects-desc-${index}`} className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">Project Summary</label>
                                                     <textarea 
+                                                        id={`projects-desc-${index}`}
+                                                        name={`projects-desc-${index}`}
                                                         value={proj.description} 
                                                         onChange={(e) => handleArrayChange(index, 'description', e.target.value, 'projects')}
-                                                        className="w-full h-24 bg-black/20 border border-white/10 rounded-lg p-3 text-sm focus:ring-1 focus:ring-primary outline-none"
+                                                        data-field="description" data-index={index} data-type="projects"
+                                                        className="w-full h-24 bg-black/5 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded-lg p-3 text-sm focus:ring-1 focus:ring-primary outline-none text-text transition-all focus:bg-black/10 dark:focus:bg-black/40 resize-y"
                                                         placeholder="Built a real-time analytics dashboard tracking over 1 million daily events..."
                                                     />
                                                 </div>
@@ -669,8 +743,8 @@ const ResumeBuilder = () => {
                                         <button onClick={() => addArrayItem('education')} className="text-sm bg-primary/20 text-primary px-3 py-1 rounded-full font-bold hover:bg-primary hover:text-white transition-colors">+ Add</button>
                                     </h2>
                                     {formData.education.map((edu, index) => (
-                                        <div key={index} className="mb-4 p-5 bg-white/5 rounded-xl border border-white/10 relative">
-                                            {index > 0 && <button onClick={() => removeArrayItem(index, 'education')} className="absolute top-4 right-4 text-red-400 text-xs font-bold hover:text-red-300">Remove</button>}
+                                        <div key={index} className="mb-4 p-5 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10 relative">
+                                            {index > 0 && <button onClick={() => removeArrayItem(index, 'education')} className="absolute top-4 right-4 text-red-500 dark:text-red-400 text-xs font-bold hover:text-red-600 dark:hover:text-red-300">Remove</button>}
                                             <div className="grid grid-cols-1 gap-4">
                                                 <FormInput label="School / University" value={edu.school} onChange={(val) => handleArrayChange(index, 'school', val, 'education')} placeholder="State University" />
                                                 <FormInput label="Degree / Major" value={edu.degree} onChange={(val) => handleArrayChange(index, 'degree', val, 'education')} placeholder="B.S. Computer Science" />
@@ -685,11 +759,14 @@ const ResumeBuilder = () => {
                             {step === 6 && (
                                  <motion.div key="step6" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="space-y-4">
                                     <h2 className="text-2xl font-bold mb-6">Technical Skills</h2>
-                                    <p className="text-muted text-sm mb-4">List your technical skills separated by commas.</p>
+                                    <label htmlFor="skills" className="text-muted text-sm mb-4 block">List your technical skills separated by commas.</label>
                                     <textarea 
+                                        id="skills"
+                                        name="skills"
                                         value={formData.skills}
                                         onChange={(e) => handleInputChange(e, 'skills')}
-                                        className="w-full h-48 bg-black/20 border border-white/10 rounded-xl p-6 text-lg text-white focus:ring-1 focus:ring-primary outline-none"
+                                        data-field="skills"
+                                        className="w-full h-48 bg-black/5 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded-xl p-6 text-lg text-text focus:ring-1 focus:ring-primary outline-none transition-all focus:bg-black/10 dark:focus:bg-black/40 resize-y"
                                         placeholder="e.g. JavaScript, React, Node.js, MongoDB, Git, AWS, System Architecture..."
                                     />
                                 </motion.div>
@@ -698,11 +775,11 @@ const ResumeBuilder = () => {
                     </div>
 
                     {/* Left Actions Footer */}
-                    <div className="pt-6 border-t border-white/10 flex justify-between shrink-0">
+                    <div className="pt-6 border-t border-black/10 dark:border-white/10 flex justify-between shrink-0">
                          <button 
                             onClick={prevStep} 
                             disabled={step === 1}
-                            className={`flex items-center gap-2 font-bold transition-colors ${step === 1 ? 'opacity-0 cursor-default' : 'text-gray-400 hover:text-white'}`}
+                            className={`flex items-center gap-2 font-bold transition-colors ${step === 1 ? 'opacity-0 cursor-default' : 'text-muted hover:text-text'}`}
                         >
                             <ChevronLeft size={20} /> Back
                         </button>
@@ -719,66 +796,85 @@ const ResumeBuilder = () => {
                 </div>
 
                 {/* RIGHT PANEL : LIVE PREVIEW & TOOLBAR */}
-                <div className="w-full xl:w-[55%] flex flex-col pt-8 xl:pt-0">
-                    <div className="flex justify-between items-end mb-4 no-print flex-wrap gap-4">
-                        <div className="flex items-center gap-4 bg-white/5 p-3 border border-white/10 rounded-xl shadow-lg">
-                            <div className="flex items-center gap-2">
-                                <Palette size={16} className="text-gray-400" />
+                <div className={`w-full xl:w-[55%] flex-col pt-4 xl:pt-0 pb-20 xl:pb-0 transition-opacity duration-500 ${mobileView === 'edit' ? 'hidden xl:flex' : 'flex'}`}>
+                    {/* The Settings Toolbar */}
+                    <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-6 no-print gap-3 sm:gap-4 sticky top-[72px] z-30 bg-background/95 md:bg-background/80 xl:bg-transparent backdrop-blur-xl py-4 xl:static xl:pb-0 rounded-b-3xl md:rounded-none shadow-2xl xl:shadow-none border-b border-black/10 dark:border-white/10 xl:border-none px-2 xl:px-0">
+                        <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 bg-black/5 dark:bg-white/5 backdrop-blur-md p-2 border border-black/10 dark:border-white/10 rounded-2xl shadow-lg w-full md:w-auto">
+                            
+                            <div className="flex items-center gap-2 bg-black/5 dark:bg-black/20 px-3 py-1.5 rounded-full hover:bg-black/10 dark:hover:bg-black/40 transition-colors border border-black/5 dark:border-white/5">
+                                <Palette size={14} className="text-primary hidden sm:block" />
+                                <span className="text-xs text-muted font-bold hidden sm:block">Color:</span>
                                 <input 
                                     type="color" 
                                     value={theme.accentColor}
                                     onChange={e => setTheme({...theme, accentColor: e.target.value})}
-                                    className="w-6 h-6 rounded cursor-pointer border-none bg-transparent"
+                                    className="w-5 h-5 rounded-full cursor-pointer border-0 bg-transparent outline-none p-0 overflow-hidden"
                                     title="Accent Color"
                                 />
                             </div>
-                            <div className="w-px h-6 bg-white/10"></div>
-                            <div className="flex items-center gap-2">
-                                <Type size={16} className="text-gray-400" />
+                            
+                            <div className="flex items-center gap-2 bg-black/5 dark:bg-black/20 px-3 py-1.5 rounded-full hover:bg-black/10 dark:hover:bg-black/40 transition-colors border border-black/5 dark:border-white/5">
+                                <Type size={14} className="text-primary hidden sm:block" />
                                 <select 
-                                    className="bg-black/40 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none"
+                                    className="bg-transparent text-[11px] sm:text-xs text-text focus:outline-none cursor-pointer w-20 sm:w-auto font-medium"
                                     value={theme.fontFamily}
                                     onChange={e => setTheme({...theme, fontFamily: e.target.value})}
                                     title="Font Style"
                                 >
-                                    <option value='ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"'>Modern Sans (Default)</option>
-                                    <option value="Arial, Helvetica, sans-serif">Standard Arial</option>
-                                    <option value="Verdana, Geneva, sans-serif">Wide Verdana</option>
-                                    <option value="ui-serif, Georgia, serif">Classic Serif</option>
-                                    <option value='"Times New Roman", Times, serif'>Times New Roman</option>
-                                    <option value="Garamond, serif">Elegant Garamond</option>
-                                    <option value="ui-monospace, Consolas, monospace">Technical Mono</option>
-                                    <option value='"Courier New", Courier, monospace'>Courier New</option>
+                                    <option className="bg-surface" value='ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"'>Modern Sans</option>
+                                    <option className="bg-surface" value="Arial, Helvetica, sans-serif">Standard Arial</option>
+                                    <option className="bg-surface" value="Verdana, Geneva, sans-serif">Wide Verdana</option>
+                                    <option className="bg-surface" value="ui-serif, Georgia, serif">Classic Serif</option>
+                                    <option className="bg-surface" value='"Times New Roman", Times, serif'>Times New Roman</option>
+                                    <option className="bg-surface" value="Garamond, serif">Elegant Garamond</option>
+                                    <option className="bg-surface" value="ui-monospace, Consolas, monospace">Technical Mono</option>
+                                    <option className="bg-surface" value='"Courier New", Courier, monospace'>Courier New</option>
                                 </select>
                             </div>
-                            <div className="w-px h-6 bg-white/10"></div>
-                            <div className="flex items-center gap-2">
-                                <ALargeSmall size={16} className="text-gray-400" />
+
+                            <div className="flex items-center gap-2 bg-black/5 dark:bg-black/20 px-3 py-1.5 rounded-full hover:bg-black/10 dark:hover:bg-black/40 transition-colors border border-black/5 dark:border-white/5">
+                                <ALargeSmall size={14} className="text-primary hidden sm:block" />
                                 <select 
-                                    className="bg-black/40 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none scrollbar-thin overflow-y-auto max-h-48"
+                                    className="bg-transparent text-[11px] sm:text-xs text-text focus:outline-none cursor-pointer w-[45px] sm:w-auto font-medium scrollbar-thin overflow-y-auto max-h-48"
                                     value={theme.fontSize}
                                     onChange={e => setTheme({...theme, fontSize: e.target.value})}
                                     title="Font Size"
                                 >
                                     {Array.from({ length: 51 }, (_, i) => i * 2).map(size => (
-                                        <option key={size} value={`${size}px`}>{size}px</option>
+                                        <option className="bg-surface" key={size} value={`${size}px`}>{size}px</option>
                                     ))}
                                 </select>
                             </div>
+
                         </div>
 
-                        <button 
-                            onClick={downloadPDF} 
-                            className="bg-white text-black px-6 py-2.5 rounded-lg font-black flex items-center gap-2 hover:bg-gray-200 transition-colors shadow-lg shadow-white/10"
-                        >
-                            <Download size={18} /> Export Vector PDF
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-[90%] md:w-auto mx-auto md:mx-0 justify-center shrink-0">
+                            <button 
+                                onClick={analyzeATS} 
+                                disabled={isAnalyzingATS}
+                                className="bg-gradient-to-r w-full sm:w-auto from-emerald-500 to-teal-600 text-white px-6 py-2.5 rounded-full font-black flex justify-center items-center gap-2 hover:scale-105 transition-transform shadow-[0_0_15px_rgba(16,185,129,0.4)] shrink-0 disabled:opacity-50 disabled:hover:scale-100"
+                            >
+                                {isAnalyzingATS ? <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div> : <Sparkles size={18} />} Analyze ATS
+                            </button>
+                            <button 
+                                onClick={downloadPDF} 
+                                className="bg-gradient-to-r w-full sm:w-auto from-white to-gray-200 text-black px-6 py-2.5 rounded-full font-black flex justify-center items-center gap-2 hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.3)] shrink-0"
+                            >
+                                <Download size={18} /> Export PDF
+                            </button>
+                            <button 
+                                onClick={exportWord} 
+                                className="bg-gradient-to-r w-full sm:w-auto from-indigo-500 to-blue-600 text-white px-6 py-2.5 rounded-full font-black flex justify-center items-center gap-2 hover:scale-105 transition-transform shadow-[0_0_15px_rgba(99,102,241,0.4)] shrink-0"
+                            >
+                                <FileText size={18} /> Export Word
+                            </button>
+                        </div>
                     </div>
                     
                     {/* The Render Canvas */}
-                    <div className="w-full relative shadow-2xl rounded-lg overflow-x-auto no-scrollbar custom-scrollbar bg-[#eef2f6] p-4 border border-white/10">
+                    <div className="w-full relative shadow-2xl rounded-lg overflow-hidden bg-gray-100 dark:bg-[#eef2f6] p-2 md:p-4 border border-black/10 dark:border-white/10 flex justify-center">
                         <div 
-                            className="bg-white w-[100%] min-w-[700px] origin-top-left mx-auto resume-print-container"
+                            className="bg-white w-[800px] mx-auto resume-print-container mobile-zoom"
                         >
                             {selectedTemplate === 'modern' && <ModernTemplate data={formData} tConfig={theme} />}
                             {selectedTemplate === 'classic' && <ClassicTemplate data={formData} tConfig={theme} />}
@@ -787,6 +883,24 @@ const ResumeBuilder = () => {
                             {selectedTemplate === 'executive' && <ExecutiveTemplate data={formData} tConfig={theme} />}
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Mobile View Toggle FAB */}
+            <div className="fixed bottom-6 w-full left-0 flex justify-center xl:hidden z-50 no-print px-4">
+                <div className="bg-surface border border-black/20 dark:border-white/20 p-1 rounded-full shadow-2xl flex items-center gap-1 backdrop-blur-lg">
+                    <button 
+                        onClick={() => setMobileView('edit')}
+                        className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${mobileView === 'edit' ? 'bg-primary text-white shadow-lg' : 'text-muted hover:text-text'}`}
+                    >
+                        <LayoutTemplate size={16} /> Edit Form
+                    </button>
+                    <button 
+                        onClick={() => setMobileView('preview')}
+                        className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${mobileView === 'preview' ? 'bg-black text-white dark:bg-white dark:text-black shadow-lg' : 'text-muted hover:text-text'}`}
+                    >
+                        <FileText size={16} /> Live Preview
+                    </button>
                 </div>
             </div>
 
@@ -837,22 +951,152 @@ const ResumeBuilder = () => {
                         margin: 0mm;
                     }
                 }
+
+                @media screen and (max-width: 480px) {
+                    .mobile-zoom {
+                        zoom: 0.4;
+                    }
+                }
+                @media screen and (min-width: 481px) and (max-width: 768px) {
+                    .mobile-zoom {
+                        zoom: 0.6;
+                    }
+                }
+                @media screen and (min-width: 769px) and (max-width: 1279px) {
+                    .mobile-zoom {
+                        zoom: 0.8;
+                    }
+                }
             `}</style>
+            
+            <AnimatePresence>
+                {showAtsModal && atsResult && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setShowAtsModal(false)}
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            className="bg-white dark:bg-[#1a1c23] border border-black/10 dark:border-white/10 p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-3xl overflow-y-auto max-h-[90vh] custom-scrollbar"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold flex items-center gap-3 text-text">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                        <Sparkles className="text-emerald-500" size={20} />
+                                    </div>
+                                    ATS Match Score
+                                </h2>
+                                <button onClick={() => setShowAtsModal(false)} className="text-muted hover:text-text transition-colors p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5">
+                                    <X size={24} />
+                                </button>
+                            </div>
+                            
+                            <div className="flex flex-col md:flex-row gap-8 items-center justify-center md:justify-start mb-8 bg-black/5 dark:bg-white/5 p-8 rounded-2xl border border-black/5 dark:border-white/5">
+                                <div className="relative w-40 h-40 flex items-center justify-center shrink-0">
+                                    <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
+                                        <path
+                                            className="text-black/10 dark:text-white/10"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="3"
+                                        />
+                                        <path
+                                            className={`${atsResult.score >= 80 ? 'text-emerald-500' : atsResult.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}
+                                            strokeDasharray={`${atsResult.score}, 100`}
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="3"
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className="text-5xl font-black text-text">{atsResult.score}</span>
+                                        <span className="text-[11px] text-muted uppercase font-bold tracking-widest mt-1">/ 100</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="text-center md:text-left">
+                                    <h3 className="text-xl font-bold text-text mb-2">
+                                        {atsResult.score >= 80 ? 'Outstanding Compatibility 🌟' : atsResult.score >= 50 ? 'Moderate Compatibility ⚡' : 'Needs Improvement ⚠️'}
+                                    </h3>
+                                    <p className="text-muted leading-relaxed">
+                                        {atsResult.score >= 80 ? 'Your resume is highly optimized and easily parsed by ATS software. You have strong keyword density, action verbs, and well-structured sections.' : atsResult.score >= 50 ? 'Your resume is decently structured but might miss out on key parser metrics. Consider adding more quantifiable achievements and action verbs.' : 'Your resume geometry or content phrasing will likely struggle against automated tracking systems. Implement the feedback below to bypass the initial filters.'}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-6">
+                                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5">
+                                        <h3 className="font-bold text-emerald-600 dark:text-emerald-400 mb-4 flex items-center gap-2 text-lg"><CheckCircle size={20} /> Key Strengths</h3>
+                                        <ul className="space-y-3">
+                                            {atsResult.strengths?.map((s, i) => (
+                                                <li key={i} className="flex gap-3 text-sm text-text/90 leading-relaxed">
+                                                    <span className="text-emerald-500 mt-0.5">•</span>
+                                                    <span>{s}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5">
+                                        <h3 className="font-bold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2 text-lg"><X size={20} /> Weaknesses</h3>
+                                        <ul className="space-y-3">
+                                            {atsResult.weaknesses?.map((w, i) => (
+                                                <li key={i} className="flex gap-3 text-sm text-text/90 leading-relaxed">
+                                                    <span className="text-red-500 mt-0.5">•</span>
+                                                    <span>{w}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 h-full">
+                                    <h3 className="font-bold text-blue-600 dark:text-blue-400 mb-4 flex items-center gap-2 text-lg"><GraduationCap size={20} /> Recommended Fixes</h3>
+                                    <ul className="space-y-4">
+                                        {atsResult.tips?.map((t, i) => (
+                                            <li key={i} className="flex gap-3 text-sm text-text/90 leading-relaxed bg-blue-500/5 p-3 rounded-lg border border-blue-500/10">
+                                                <span className="text-blue-500 font-bold">{i + 1}.</span>
+                                                <span>{t}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
 
-const FormInput = ({ label, value, onChange, placeholder }) => (
-    <div className="space-y-1">
-        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</label>
-        <input 
-            type="text" 
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-primary outline-none transition-all focus:bg-black/40"
-            placeholder={placeholder}
-        />
-    </div>
-);
+const FormInput = ({ label, value, onChange, placeholder, name }) => {
+    const defaultId = useId();
+    const id = name || defaultId;
+    return (
+        <div className="space-y-1">
+            <label htmlFor={id} className="text-xs font-semibold text-muted uppercase tracking-wider">{label}</label>
+            <input 
+                id={id}
+                name={name || label.toLowerCase().replace(/\s+/g, '-')}
+                type="text" 
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full bg-black/5 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded-lg p-3 text-text focus:ring-1 focus:ring-primary outline-none transition-all focus:bg-black/10 dark:focus:bg-black/40"
+                placeholder={placeholder}
+            />
+        </div>
+    );
+};
+
+
 
 export default ResumeBuilder;

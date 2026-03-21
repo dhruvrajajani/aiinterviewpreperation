@@ -312,7 +312,7 @@ const Profile = () => {
                                 name="username"
                                 value={formData.username || user.username}
                                 onChange={handleChange}
-                                className="text-2xl sm:text-3xl md:text-4xl font-bold bg-transparent border-b border-white/10 focus:border-primary outline-none w-full mb-1"
+                                className="text-2xl sm:text-3xl md:text-4xl font-bold bg-transparent border-b border-black/10 dark:border-white/10 focus:border-primary outline-none w-full mb-1"
                             />
                         ) : (
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold break-words overflow-hidden text-ellipsis">{user.username}</h1>
@@ -346,11 +346,11 @@ const Profile = () => {
                     <TrendingUp className="text-primary" size={20}/> Activity
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="stat-card bg-surface-light p-4 rounded-xl text-center border border-white/5">
+                    <div className="stat-card bg-black/5 dark:bg-white/5 p-4 rounded-xl text-center border border-white/5">
                         <div className="text-3xl font-bold text-yellow-400 mb-1">{user.coins || 0}</div>
                         <div className="text-xs uppercase tracking-wider text-muted font-semibold">Coins</div>
                     </div>
-                    <div className="stat-card bg-surface-light p-4 rounded-xl text-center border border-white/5">
+                    <div className="stat-card bg-black/5 dark:bg-white/5 p-4 rounded-xl text-center border border-white/5">
                         <div className="text-3xl font-bold text-orange-500 mb-1">{user.streak || 0} 🔥</div>
                         <div className="text-xs uppercase tracking-wider text-muted font-semibold">Day Streak</div>
                     </div>
@@ -369,12 +369,12 @@ const Profile = () => {
                 </h3>
                 <div className="space-y-3">
                     {user.email && (
-                        <div className="flex items-center gap-3 text-muted hover:text-white transition-colors overflow-hidden">
+                        <div className="flex items-center gap-3 text-muted hover:text-text transition-colors overflow-hidden">
                             <Mail size={18} className="shrink-0" /> <span className="truncate">{user.email}</span>
                         </div>
                     )}
                     {(formData.socialLinks?.github || isEditing) && (
-                         <div className="flex items-center gap-3 text-muted hover:text-white transition-colors overflow-hidden">
+                         <div className="flex items-center gap-3 text-muted hover:text-text transition-colors overflow-hidden">
                             <Github size={18} className="shrink-0" /> 
                             {isEditing ? (
                                 <span className="text-sm truncate">Link via Edit Form</span>
@@ -386,7 +386,7 @@ const Profile = () => {
                         </div>
                     )}
                      {(formData.socialLinks?.linkedin || isEditing) && (
-                         <div className="flex items-center gap-3 text-muted hover:text-white transition-colors overflow-hidden">
+                         <div className="flex items-center gap-3 text-muted hover:text-text transition-colors overflow-hidden">
                             <Linkedin size={18} className="shrink-0" /> 
                             {isEditing ? (
                                 <span className="text-sm truncate">Link via Edit Form</span>
@@ -398,7 +398,7 @@ const Profile = () => {
                         </div>
                     )}
                       {(formData.socialLinks?.portfolio || isEditing) && (
-                         <div className="flex items-center gap-3 text-muted hover:text-white transition-colors overflow-hidden">
+                         <div className="flex items-center gap-3 text-muted hover:text-text transition-colors overflow-hidden">
                             <Globe size={18} className="shrink-0" /> 
                             {isEditing ? (
                                 <span className="text-sm truncate">Link via Edit Form</span>
@@ -430,28 +430,28 @@ const Profile = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-muted">Current Position</label>
-                                <div className="input-group flex items-center bg-surface-light rounded-lg px-3 border border-white/10 focus-within:border-primary transition-colors">
+                                <div className="input-group flex items-center bg-black/5 dark:bg-white/5 rounded-lg px-3 border border-black/10 dark:border-white/10 focus-within:border-primary transition-colors">
                                     <Briefcase size={18} className="text-muted mr-2" />
                                     <input 
                                         type="text" 
                                         name="currentPosition" 
                                         value={formData.currentPosition}
                                         onChange={handleChange}
-                                        className="bg-transparent border-none outline-none w-full py-3 text-white placeholder-gray-500"
+                                        className="bg-transparent border-none outline-none w-full py-3 text-text placeholder-gray-500"
                                         placeholder="e.g. Senior Developer"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-muted">Location</label>
-                                <div className="input-group flex items-center bg-surface-light rounded-lg px-3 border border-white/10 focus-within:border-primary transition-colors">
+                                <div className="input-group flex items-center bg-black/5 dark:bg-white/5 rounded-lg px-3 border border-black/10 dark:border-white/10 focus-within:border-primary transition-colors">
                                     <MapPin size={18} className="text-muted mr-2" />
                                     <input 
                                         type="text" 
                                         name="location" 
                                         value={formData.location}
                                         onChange={handleChange}
-                                        className="bg-transparent border-none outline-none w-full py-3 text-white placeholder-gray-500"
+                                        className="bg-transparent border-none outline-none w-full py-3 text-text placeholder-gray-500"
                                         placeholder="e.g. San Francisco, CA"
                                     />
                                 </div>
@@ -464,7 +464,7 @@ const Profile = () => {
                                 name="bio" 
                                 value={formData.bio}
                                 onChange={handleChange}
-                                className="w-full bg-surface-light rounded-lg p-4 border border-white/10 focus:border-primary outline-none transition-colors min-h-[100px]"
+                                className="w-full bg-black/5 dark:bg-white/5 rounded-lg p-4 border border-black/10 dark:border-white/10 focus:border-primary outline-none transition-colors min-h-[100px]"
                                 placeholder="Tell us about yourself..."
                             ></textarea>
                         </div>
@@ -472,36 +472,36 @@ const Profile = () => {
                          <div className="space-y-2 mb-6">
                             <label className="text-sm font-medium text-muted">Social Links</label>
                             <div className="grid grid-cols-1 gap-3">
-                                <div className="flex items-center bg-surface-light rounded-lg px-3 border border-white/10">
+                                <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-lg px-3 border border-black/10 dark:border-white/10">
                                     <Github size={18} className="text-muted mr-2" />
                                     <input 
                                         type="text" 
                                         name="socialLinks.github" 
                                         value={formData.socialLinks.github}
                                         onChange={handleChange}
-                                        className="bg-transparent border-none outline-none w-full py-3 text-white text-sm"
+                                        className="bg-transparent border-none outline-none w-full py-3 text-text text-sm"
                                         placeholder="GitHub URL"
                                     />
                                 </div>
-                                <div className="flex items-center bg-surface-light rounded-lg px-3 border border-white/10">
+                                <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-lg px-3 border border-black/10 dark:border-white/10">
                                     <Linkedin size={18} className="text-muted mr-2" />
                                     <input 
                                         type="text" 
                                         name="socialLinks.linkedin" 
                                         value={formData.socialLinks.linkedin}
                                         onChange={handleChange}
-                                        className="bg-transparent border-none outline-none w-full py-3 text-white text-sm"
+                                        className="bg-transparent border-none outline-none w-full py-3 text-text text-sm"
                                         placeholder="LinkedIn URL"
                                     />
                                 </div>
-                                <div className="flex items-center bg-surface-light rounded-lg px-3 border border-white/10">
+                                <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-lg px-3 border border-black/10 dark:border-white/10">
                                     <Globe size={18} className="text-muted mr-2" />
                                     <input 
                                         type="text" 
                                         name="socialLinks.portfolio" 
                                         value={formData.socialLinks.portfolio}
                                         onChange={handleChange}
-                                        className="bg-transparent border-none outline-none w-full py-3 text-white text-sm"
+                                        className="bg-transparent border-none outline-none w-full py-3 text-text text-sm"
                                         placeholder="Portfolio URL"
                                     />
                                 </div>
@@ -510,7 +510,7 @@ const Profile = () => {
 
                         <div className="space-y-2 mb-6">
                             <label className="text-sm font-medium text-muted">Resume</label>
-                            <div className="flex items-center gap-4 bg-surface-light rounded-lg p-3 border border-white/10">
+                            <div className="flex items-center gap-4 bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10">
                                 <FileText size={24} className="text-primary" />
                                 <div className="flex-1 truncate text-sm text-gray-300">
                                     {formData.resume ? (formData.resume.split('/').pop().split('-').slice(2).join('-') || "Resume Uploaded") : "No resume uploaded"}
@@ -525,7 +525,7 @@ const Profile = () => {
                                 <button 
                                     type="button" 
                                     onClick={() => resumeInputRef.current.click()}
-                                    className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded text-sm transition-colors"
+                                    className="px-3 py-1.5 bg-black/5 dark:bg-white/5 hover:bg-white/10 rounded text-sm transition-colors"
                                 >
                                     Upload
                                 </button>
@@ -534,11 +534,11 @@ const Profile = () => {
 
                         <div className="space-y-2 mb-6">
                             <label className="text-sm font-medium text-muted">Skills (Press Enter to add)</label>
-                             <div className="input-group flex items-center bg-surface-light rounded-lg px-3 border border-white/10 focus-within:border-primary transition-colors">
+                             <div className="input-group flex items-center bg-black/5 dark:bg-white/5 rounded-lg px-3 border border-black/10 dark:border-white/10 focus-within:border-primary transition-colors">
                                 <input 
                                     type="text" 
                                     onKeyDown={handleSkillAdd}
-                                    className="bg-transparent border-none outline-none w-full py-3 text-white placeholder-gray-500"
+                                    className="bg-transparent border-none outline-none w-full py-3 text-text placeholder-gray-500"
                                     placeholder="Add a skill..."
                                 />
                             </div>
@@ -546,17 +546,17 @@ const Profile = () => {
                                 {formData.skills.map((skill, index) => (
                                     <span key={index} className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2">
                                         {skill}
-                                        <button type="button" onClick={() => removeSkill(skill)} className="hover:text-white"><X size={14}/></button>
+                                        <button type="button" onClick={() => removeSkill(skill)} className="hover:text-text"><X size={14}/></button>
                                     </span>
                                 ))}
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                        <div className="flex justify-end gap-3 pt-4 border-t border-black/10 dark:border-white/10">
                             <button 
                                 type="button" 
                                 onClick={() => setIsEditing(false)}
-                                className="px-6 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                                className="px-6 py-2 rounded-lg hover:bg-black/5 dark:bg-white/5 transition-colors"
                             >
                                 Cancel
                             </button>
@@ -596,7 +596,7 @@ const Profile = () => {
                             {user.skills && user.skills.length > 0 ? (
                                 <div className="flex flex-wrap gap-2">
                                     {user.skills.map((skill, index) => (
-                                        <div key={index} className="bg-white/5 hover:bg-white/10 transition-colors px-4 py-2 rounded-lg border border-white/5 text-sm font-medium">
+                                        <div key={index} className="bg-black/5 dark:bg-white/5 hover:bg-white/10 transition-colors px-4 py-2 rounded-lg border border-black/5 dark:border-white/5 text-sm font-medium">
                                             {skill}
                                         </div>
                                     ))}
@@ -612,13 +612,13 @@ const Profile = () => {
                                 <FileText className="text-blue-400" size={20}/> Resume
                             </h3>
                             {user.resume ? (
-                                <div className="flex items-center justify-between bg-surface-light p-4 rounded-xl border border-white/5">
+                                <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-blue-500/20 rounded-lg">
                                             <FileText size={24} className="text-blue-400" />
                                         </div>
                                         <div>
-                                             <div className="font-medium text-white">My Resume</div>
+                                             <div className="font-medium text-text">My Resume</div>
                                             <div className="text-xs text-muted">Click to delete</div>
                                         </div>
                                     </div>

@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 const PerformanceChart = ({ data }) => {
     if (!data || data.length === 0) {
         return (
-            <div className="glass-card p-8 text-center">
+            <div className="glass-panel p-8 text-center">
                 <p className="text-muted">No performance data yet. Complete some activities to see your progress!</p>
             </div>
         );
@@ -18,8 +18,8 @@ const PerformanceChart = ({ data }) => {
     }));
 
     return (
-        <div className="glass-card p-6">
-            <h3 className="text-xl font-bold mb-6">Activity Trend (Last 7 Days)</h3>
+        <div className="glass-panel p-6">
+            <h3 className="text-xl font-display font-bold mb-6 tracking-wide">Activity Trend (Last 7 Days)</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#333" />

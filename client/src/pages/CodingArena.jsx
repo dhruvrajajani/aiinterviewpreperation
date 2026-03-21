@@ -77,7 +77,7 @@ const CodingArena = () => {
                     <input 
                         type="text" 
                         placeholder="Search questions..." 
-                        className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 focus:ring-1 focus:ring-primary outline-none text-white placeholder-gray-500"
+                        className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg pl-10 pr-4 py-2 focus:ring-1 focus:ring-primary outline-none text-text placeholder-gray-500"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -87,7 +87,7 @@ const CodingArena = () => {
                     <div className="flex items-center gap-2">
                         <Signal size={16} className="text-muted" />
                         <select 
-                            className="bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:outline-none"
+                            className="bg-surface dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-4 py-2 text-sm focus:outline-none"
                             value={filterDifficulty}
                             onChange={(e) => setFilterDifficulty(e.target.value)}
                         >
@@ -101,7 +101,7 @@ const CodingArena = () => {
                     <div className="flex items-center gap-2">
                         <Building2 size={16} className="text-muted" />
                         <select 
-                            className="bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm focus:outline-none"
+                            className="bg-surface dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-4 py-2 text-sm focus:outline-none"
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
                         >
@@ -146,7 +146,7 @@ const CodingArena = () => {
                                         href={q.link} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="text-muted hover:text-white transition-colors"
+                                        className="text-muted hover:text-text transition-colors"
                                         title="Solve on Platform"
                                     >
                                         <ExternalLink size={18} />
@@ -164,7 +164,7 @@ const CodingArena = () => {
 
                             <div className="flex flex-wrap gap-2 mb-6">
                                 {q.companies && q.companies.map(c => (
-                                    <span key={c} className="text-[10px] bg-white/5 border border-white/10 px-2 py-0.5 rounded text-gray-300 flex items-center gap-1">
+                                    <span key={c} className="text-[10px] bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-2 py-0.5 rounded text-gray-500 dark:text-gray-300 flex items-center gap-1">
                                         <Building2 size={10} /> {c}
                                     </span>
                                 ))}
@@ -178,8 +178,8 @@ const CodingArena = () => {
                                     onClick={() => handleLeetCodeClick(q._id)}
                                     className={`flex-1 py-2 rounded-lg font-bold flex items-center justify-center gap-2 text-sm transition-all ${
                                         q.link 
-                                        ? 'bg-white/10 text-white hover:bg-white/20' 
-                                        : 'bg-white/5 text-muted cursor-not-allowed'
+                                        ? 'bg-black/5 dark:bg-white/10 text-text hover:bg-black/10 dark:hover:bg-white/20' 
+                                        : 'bg-black/5 dark:bg-white/5 text-muted cursor-not-allowed'
                                     }`}
                                 >
                                     LeetCode <ExternalLink size={14} />
@@ -190,9 +190,9 @@ const CodingArena = () => {
                                     title={user?.solvedQuestions?.includes(q._id) ? "You have already claimed this reward!" : !clickedLeetCode.has(q._id) ? "You must open the LeetCode link first to unlock this button!" : "Claim completion reward"}
                                     className={`flex-1 py-2 rounded-lg font-bold flex items-center justify-center gap-1 text-sm transition-all ${
                                         user?.solvedQuestions?.includes(q._id)
-                                        ? 'bg-green-500/20 text-green-400 cursor-default'
+                                        ? 'bg-green-500/20 text-green-600 dark:text-green-400 cursor-default'
                                         : !clickedLeetCode.has(q._id)
-                                        ? 'bg-white/5 text-muted cursor-not-allowed'
+                                        ? 'bg-black/5 dark:bg-white/5 text-muted cursor-not-allowed'
                                         : 'bg-primary text-white hover:bg-indigo-600 disabled:opacity-50'
                                     }`}
                                 >

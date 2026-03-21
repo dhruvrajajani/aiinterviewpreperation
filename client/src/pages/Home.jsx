@@ -7,8 +7,13 @@ const Home = () => {
     const { user } = useAuth();
 
     return (
-        <div className="min-h-screen bg-background text-white overflow-hidden relative">
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+        <div className="min-h-screen bg-background text-text overflow-hidden relative">
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none z-20 mix-blend-overlay"></div>
+            
+            {/* Animated Background Blobs */}
+            <div className="absolute top-20 left-10 w-96 h-96 bg-primary/30 rounded-full mix-blend-screen filter blur-[120px] animate-blob z-0"></div>
+            <div className="absolute top-40 right-10 w-96 h-96 bg-secondary/30 rounded-full mix-blend-screen filter blur-[120px] animate-blob animation-delay-2000 z-0"></div>
+            <div className="absolute -bottom-20 left-1/2 w-96 h-96 bg-accent/20 rounded-full mix-blend-screen filter blur-[120px] animate-blob animation-delay-4000 z-0"></div>
 
             {/* Hero Section */}
             <section className="relative pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
@@ -37,7 +42,7 @@ const Home = () => {
                                 <Link to="/register" className="bg-primary hover:bg-indigo-500 text-white px-8 py-4 rounded-full font-semibold transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg shadow-primary/25">
                                     Get Started <ChevronRight size={20} />
                                 </Link>
-                                <Link to="/login" className="bg-surface border border-white/10 hover:bg-surface/80 text-white px-8 py-4 rounded-full font-semibold transition-all">
+                                <Link to="/login" className="bg-surface border border-black/10 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-surface/80 text-text px-8 py-4 rounded-full font-semibold transition-all">
                                     Login
                                 </Link>
                             </>
@@ -47,7 +52,7 @@ const Home = () => {
             </section>
 
             {/* Stats Section */}
-            <section className="py-10 border-y border-white/5 bg-surface/30 backdrop-blur-sm">
+            <section className="py-10 border-y border-black/5 dark:border-white/5 bg-surface/30 backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                     <StatBox number="10k+" label="Questions" />
                     <StatBox number="5k+" label="Mock Interviews" />
@@ -150,11 +155,11 @@ const Home = () => {
                 <h2 className="text-4xl font-bold mb-6">Ready to Start Your Journey?</h2>
                 <p className="text-xl text-muted mb-10">Join thousands of developers acing their interviews today.</p>
                 {user ? (
-                    <Link to="/dashboard" className="bg-white text-background hover:bg-gray-100 px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg">
+                    <Link to="/dashboard" className="bg-text text-background px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:opacity-90">
                         Continue Learning
                     </Link>
                 ) : (
-                    <Link to="/register" className="bg-white text-background hover:bg-gray-100 px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg">
+                    <Link to="/register" className="bg-text text-background px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:opacity-90">
                         Join Now - It's Free
                     </Link>
                 )}
@@ -167,7 +172,7 @@ const Home = () => {
 
 const StatBox = ({ number, label }) => (
     <div className="p-4">
-        <h3 className="text-4xl font-bold text-white mb-2">{number}</h3>
+        <h3 className="text-4xl font-bold text-text mb-2">{number}</h3>
         <p className="text-muted uppercase text-sm tracking-wider">{label}</p>
     </div>
 );
@@ -175,16 +180,16 @@ const StatBox = ({ number, label }) => (
 const FeatureCard = ({ icon, title, desc }) => (
     <motion.div
         whileHover={{ y: -10 }}
-        className="glass-card p-8 hover:bg-surface/80 transition-colors w-full"
+        className="glass-panel p-8 hover:bg-black/5 dark:hover:bg-white/[0.08] transition-all duration-300 w-full group"
     >
-        <div className="mb-6 p-4 bg-white/5 rounded-2xl w-fit">{icon}</div>
+        <div className="mb-6 p-4 bg-black/5 dark:bg-white/5 rounded-2xl w-fit group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:shadow-[0_0_15px_rgba(255,255,255,0.05)]">{icon}</div>
         <h3 className="text-2xl font-bold mb-3">{title}</h3>
         <p className="text-muted leading-relaxed">{desc}</p>
     </motion.div>
 );
 
 const StepCard = ({ step, title, desc }) => (
-    <div className="relative bg-background border border-white/10 p-8 rounded-2xl text-center">
+    <div className="relative bg-background border border-black/10 dark:border-white/10 p-8 rounded-2xl text-center">
         <div className="w-16 h-16 rounded-full bg-surface border border-primary text-primary flex items-center justify-center text-2xl font-bold mx-auto mb-6 relative z-10 shadow-[0_0_15px_rgba(99,102,241,0.5)]">
             {step}
         </div>
@@ -194,11 +199,16 @@ const StepCard = ({ step, title, desc }) => (
 );
 
 const TestimonialCard = ({ name, role, quote }) => (
-    <div className="glass-card p-8">
-        <p className="text-lg italic text-gray-300 mb-6">"{quote}"</p>
-        <div>
-            <h4 className="font-bold text-white">{name}</h4>
-            <p className="text-sm text-primary">{role}</p>
+    <div className="glass-panel p-8 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-4 opacity-10">
+            <svg className="w-16 h-16 text-text" fill="currentColor" viewBox="0 0 32 32">
+                <path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-1.1.9-2 2-2h4V8h-4zm18 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-1.1.9-2 2-2h4V8h-4z" />
+            </svg>
+        </div>
+        <p className="text-lg italic text-gray-600 dark:text-gray-300 mb-6 relative z-10">"{quote}"</p>
+        <div className="relative z-10">
+            <h4 className="font-bold text-text text-lg">{name}</h4>
+            <p className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">{role}</p>
         </div>
     </div>
 );

@@ -3,7 +3,7 @@ import { Github, Twitter, Linkedin, Sparkles } from 'lucide-react';
 
 const Footer = () => {
     return (
-        <footer className="border-t border-white/10 bg-black/20 backdrop-blur-md mt-20 pt-16 pb-8">
+        <footer className="border-t border-black/10 dark:border-white/10 bg-black/5 dark:bg-black/20 backdrop-blur-md mt-20 pt-16 pb-8">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
                     {/* Brand */}
@@ -19,8 +19,8 @@ const Footer = () => {
 
                     {/* Features */}
                     <div>
-                        <h4 className="font-bold text-white mb-4">Features</h4>
-                        <ul className="space-y-2 text-sm text-gray-400">
+                        <h4 className="font-bold text-text mb-4">Features</h4>
+                        <ul className="space-y-2 text-sm text-muted">
                             <li><Link to="/coding" className="hover:text-primary transition-colors">Coding Challenges</Link></li>
                             <li><Link to="/interview" className="hover:text-primary transition-colors">AI Mock Interview</Link></li>
                             <li><Link to="/resume" className="hover:text-primary transition-colors">Resume Builder</Link></li>
@@ -32,15 +32,15 @@ const Footer = () => {
 
                     {/* Legal */}
                     <div>
-                        <h4 className="font-bold text-white mb-4">Community</h4>
+                        <h4 className="font-bold text-text mb-4">Community</h4>
                         <div className="flex gap-4 mb-6">
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-all">
+                            <a href="#" className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-muted hover:bg-primary hover:text-white transition-all">
                                 <Github size={20} />
                             </a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-all">
+                            <a href="#" className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-muted hover:bg-primary hover:text-white transition-all">
                                 <Twitter size={20} />
                             </a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-all">
+                            <a href="#" className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-muted hover:bg-primary hover:text-white transition-all">
                                 <Linkedin size={20} />
                             </a>
                         </div>
@@ -50,11 +50,11 @@ const Footer = () => {
                     </div>
                 </div>
                 
-                <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+                <div className="border-t border-black/5 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-muted">
                     <div className="flex gap-6 mb-4 md:mb-0">
-                        <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                        <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-                        <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
+                        <a href="#" className="hover:text-text transition-colors">Privacy Policy</a>
+                        <a href="#" className="hover:text-text transition-colors">Terms of Service</a>
+                        <a href="#" className="hover:text-text transition-colors">Cookie Policy</a>
                     </div>
                     <p>Designed for developers, by developers.</p>
                 </div>
