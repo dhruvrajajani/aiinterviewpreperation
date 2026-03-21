@@ -30,7 +30,9 @@ export const AuthProvider = ({ children }) => {
           setUser(res.data);
         } catch (err) {
           console.error("Error syncing user with system database:", err);
-          // If sync fails, we still consider loading complete, but user is null
+          // Fallback: even if backend sync fails, use Clerk data so ProtectedRoute
+          // doesn't falsely redirect to login
+          setUser({ id: clerkUser.id, email: clerkUser.primaryEmailAddress?.emailAddress });
         }
       } else {
         setUser(null);
@@ -54,7 +56,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, refreshUser, loading: loading || !authLoaded || !userLoaded }}>
-      {!loading && authLoaded && userLoaded && children}
+      {children}
     </AuthContext.Provider>
   );
 };

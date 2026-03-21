@@ -9,7 +9,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://aiinterviewpreperation.vercel.app',
+    process.env.CLIENT_URL, // fallback for any other frontend URL
+].filter(Boolean);
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, Postman, curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error(`CORS blocked: ${origin}`), false);
+    },
+    credentials: true
+}));
 app.use(express.json());
 
 // Database Connection
