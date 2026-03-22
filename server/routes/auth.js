@@ -31,8 +31,8 @@ router.post('/sync', require('../middleware/auth'), async (req, res) => {
             });
             await user.save();
         } else {
-            // Existing user, update avatar if necessary
-            if (avatar && user.avatar !== avatar) {
+            // Existing user, update avatar if necessary, provided they haven't set a custom Cloudinary avatar
+            if (avatar && user.avatar !== avatar && (!user.avatar || !user.avatar.includes('cloudinary.com'))) {
                 user.avatar = avatar;
                 await user.save();
             }
