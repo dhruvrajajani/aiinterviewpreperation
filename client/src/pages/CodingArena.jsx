@@ -12,6 +12,7 @@ const CodingArena = () => {
     const [submitting, setSubmitting] = useState(null);
     const [clickedLeetCode, setClickedLeetCode] = useState(new Set());
     const [filterDifficulty, setFilterDifficulty] = useState('All');
+    const [filterTopic, setFilterTopic] = useState('All');
     const [filterCompany, setFilterCompany] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -51,12 +52,14 @@ const CodingArena = () => {
 
     // Extract unique companies for filter
     const allCompanies = ['All', ...new Set(questions.flatMap(q => q.companies || []))];
+    const allTopics = ['All', ...new Set(questions.map(q => q.topic || 'General'))];
 
     const filteredQuestions = questions.filter(q => {
         const matchesDiff = filterDifficulty === 'All' || q.difficulty === filterDifficulty;
+        const matchesTopic = filterTopic === 'All' || (q.topic || 'General') === filterTopic;
         const matchesComp = filterCompany === 'All' || (q.companies && q.companies.includes(filterCompany));
         const matchesSearch = q.title.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesDiff && matchesComp && matchesSearch;
+        return matchesDiff && matchesTopic && matchesComp && matchesSearch;
     });
 
     return (
@@ -95,6 +98,19 @@ const CodingArena = () => {
                             <option value="Easy">Easy</option>
                             <option value="Medium">Medium</option>
                             <option value="Hard">Hard</option>
+                        </select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <Filter size={16} className="text-muted" />
+                        <select 
+                            className="bg-surface dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-4 py-2 text-sm focus:outline-none max-w-[150px] truncate"
+                            value={filterTopic}
+                            onChange={(e) => setFilterTopic(e.target.value)}
+                        >
+                            {allTopics.map(t => (
+                                <option key={t} value={t}>{t}</option>
+                            ))}
                         </select>
                     </div>
 
