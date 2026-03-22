@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         default: 100
     },
+    lastMonthlyCoinsDate: {
+        type: Date,
+        default: Date.now
+    },
     bio: {
         type: String,
         default: ''

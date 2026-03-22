@@ -2,6 +2,19 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 
+// Helper to check and grant 100 coins if a new month has started
+const checkMonthlyCoins = async (user) => {
+    const now = new Date();
+    if (!user.lastMonthlyCoinsDate || 
+        user.lastMonthlyCoinsDate.getMonth() !== now.getMonth() || 
+        user.lastMonthlyCoinsDate.getFullYear() !== now.getFullYear()) {
+        
+        user.coins = (user.coins || 0) + 100;
+        user.lastMonthlyCoinsDate = now;
+        await user.save();
+    }
+};
+
 // Sync user from Clerk to our DB
 router.post('/sync', require('../middleware/auth'), async (req, res) => {
     try {
@@ -38,6 +51,9 @@ router.post('/sync', require('../middleware/auth'), async (req, res) => {
             }
         }
 
+        // Grant monthly coins if applicable
+        await checkMonthlyCoins(user);
+
         res.json(user);
     } catch (err) {
         console.error('Sync Error Full:', err);
@@ -55,6 +71,10 @@ router.get('/me', require('../middleware/auth'), async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
+
+        // Grant monthly coins if applicable
+        await checkMonthlyCoins(user);
+
         res.json(user);
     } catch (err) {
         console.error(err.message);
