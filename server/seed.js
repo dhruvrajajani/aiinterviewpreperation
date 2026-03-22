@@ -60,6 +60,7 @@ const seedData = async () => {
             username: 'TestUser',
             email: 'test@example.com',
             password: hashedPassword,
+            clerkId: 'seed_clerk_id_testuser',
             coins: 100,
             streak: 5,
             badges: ['Early Adopter'],
