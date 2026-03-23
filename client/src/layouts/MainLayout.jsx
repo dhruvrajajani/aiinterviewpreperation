@@ -42,7 +42,7 @@ const MainLayout = () => {
                 <Link to="/interview" className="text-sm font-semibold text-muted hover:text-text transition-all hover:text-glow">AI Interview</Link>
                 
                 <div className="flex items-center gap-5 pl-8 border-l border-black/10 dark:border-white/10">
-                  <Link to="/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+                  <Link to="/profile" id="user-profile-link" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
                       <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-secondary p-[2px] shadow-[0_0_15px_rgba(99,102,241,0.4)] group-hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-shadow">
                           <div className="w-full h-full rounded-full overflow-hidden bg-surface flex items-center justify-center font-bold text-white">
                             {user.avatar ? (
@@ -58,7 +58,7 @@ const MainLayout = () => {
                       </div>
                       <span className="font-semibold text-sm max-w-[100px] truncate text-muted group-hover:text-text transition-colors">{user.username}</span>
                   </Link>
-                  <button onClick={handleLogout} className="text-muted hover:text-red-400 transition-colors p-2 hover:bg-red-400/10 rounded-xl">
+                  <button onClick={handleLogout} id="logout-button" className="text-muted hover:text-red-400 transition-colors p-2 hover:bg-red-400/10 rounded-xl">
                       <LogOut size={18} />
                   </button>
                   <button onClick={toggleTheme} className="text-muted hover:text-primary transition-colors p-2 hover:bg-black/10 dark:hover:bg-white/10 rounded-xl">
